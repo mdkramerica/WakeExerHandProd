@@ -184,11 +184,7 @@ export function setupSecurityMiddleware(app: Express): void {
       '/patients/', // Patient endpoints
     ];
 
-    console.log(`🔍 Middleware check: ${req.method} ${req.path}`);
-    const isPublic = publicEndpoints.some(endpoint => req.path.startsWith(endpoint));
-    console.log(`🔍 Is public: ${isPublic}, matched endpoints:`, publicEndpoints.filter(ep => req.path.startsWith(ep)));
-
-    if (isPublic) {
+    if (publicEndpoints.some(endpoint => req.path.startsWith(endpoint))) {
       return next();
     }
 

@@ -91,6 +91,114 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
   (async () => {
     const server = await registerRoutes(app);
 
+    // Register non-API routes BEFORE static middleware to ensure they take precedence
+    const { getUserByCode } = await import("./storage.js");
+    const storage = new (await import("./storage.js")).DatabaseStorage();
+
+    // Patient endpoints without /api prefix for frontend compatibility
+    app.get("/patients/by-code/:code", async (req, res) => {
+      try {
+        const code = req.params.code;
+        const user = await storage.getUserByCode(code);
+        
+        if (!user) {
+          return res.status(404).json({ message: "Patient not found" });
+        }
+        
+        const daysSinceStart = user.createdAt ? 
+          Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
+        
+        res.json({
+          id: user.id,
+          alias: user.firstName ? `${user.firstName} ${user.lastName?.charAt(0)}.` : `Patient ${user.code}`,
+          injuryType: user.injuryType || 'General Recovery',
+          daysSinceStart,
+          accessCode: user.code
+        });
+      } catch (error) {
+        res.status(500).json({ message: "Failed to fetch patient profile" });
+      }
+    });
+
+    app.get("/patients/:code/streak", async (req, res) => {
+      try {
+        const code = req.params.code;
+        const user = await storage.getUserByCode(code);
+        
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Get user's completed assessments
+        const userAssessments = await storage.getUserAssessments(user.id);
+        const completedAssessments = userAssessments.filter(ua => ua.isCompleted && ua.completedAt);
+
+        // Calculate current streak
+        let currentStreak = 0;
+        let maxStreak = 0;
+
+        // Sort assessments by completion date (newest first)
+        const sortedAssessments = completedAssessments
+          .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime());
+
+        // Group assessments by date (multiple assessments per day count as one day)
+        const assessmentsByDate = new Map<string, any[]>();
+        sortedAssessments.forEach(assessment => {
+          const dateStr = new Date(assessment.completedAt!).toISOString().split('T')[0];
+          if (!assessmentsByDate.has(dateStr)) {
+            assessmentsByDate.set(dateStr, []);
+          }
+          assessmentsByDate.get(dateStr)!.push(assessment);
+        });
+
+        const uniqueDates = Array.from(assessmentsByDate.keys()).sort().reverse();
+        let streakCount = 0;
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Calculate current streak
+        for (let i = 0; i < uniqueDates.length; i++) {
+          const currentDate = uniqueDates[i];
+          
+          if (i === 0) {
+            const daysDiff = Math.floor((new Date(today).getTime() - new Date(currentDate).getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDiff <= 1) {
+              streakCount = 1;
+            } else {
+              break;
+            }
+          } else {
+            const prevDate = uniqueDates[i-1];
+            const daysDiff = Math.floor((new Date(prevDate).getTime() - new Date(currentDate).getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDiff === 1) {
+              streakCount++;
+            } else {
+              break;
+            }
+          }
+        }
+
+        currentStreak = streakCount;
+        maxStreak = Math.max(maxStreak, currentStreak);
+
+        // Calculate max streak
+        let tempStreak = 0;
+        for (const dateStr of uniqueDates.reverse()) {
+          tempStreak++;
+          maxStreak = Math.max(maxStreak, tempStreak);
+        }
+
+        res.json({
+          currentStreak,
+          maxStreak,
+          totalCompletedDays: uniqueDates.length,
+          totalAssessments: completedAssessments.length
+        });
+      } catch (error) {
+        console.error('Error calculating streak:', error);
+        res.status(500).json({ message: "Failed to calculate streak" });
+      }
+    });
+
     // Use secure error handler
     app.use(securityErrorHandler);
 

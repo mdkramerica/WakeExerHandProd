@@ -171,14 +171,15 @@ export function setupSecurityMiddleware(app: Express): void {
   // Session validation middleware
   app.use('/api', (req: Request, res: Response, next: NextFunction) => {
     // Skip session validation for public endpoints
+    // Note: req.path does NOT include /api prefix since middleware is mounted on /api
     const publicEndpoints = [
-      '/api/health',
-      '/api/auth/login',
-      '/api/admin/login',
-      '/api/users/by-code', // Patient access by code
-      '/api/users/verify-code', // Patient code verification
-      '/api/assessments', // Assessment data for patients
-      '/api/users/', // Allow all user endpoints for now
+      '/health',
+      '/auth/login',
+      '/admin/login',
+      '/users/by-code', // Patient access by code
+      '/users/verify-code', // Patient code verification
+      '/assessments', // Assessment data for patients
+      '/users/', // Allow all user endpoints for now
     ];
 
     if (publicEndpoints.some(endpoint => req.path.startsWith(endpoint))) {

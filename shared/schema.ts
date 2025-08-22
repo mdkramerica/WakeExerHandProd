@@ -6,7 +6,7 @@ import { z } from "zod";
 export const clinicalUsers = pgTable("clinical_users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  passwordHash: text("password_hash").notNull(), // Changed from password to passwordHash
   email: text("email").notNull().unique(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
@@ -14,19 +14,38 @@ export const clinicalUsers = pgTable("clinical_users", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   lastLoginAt: timestamp("last_login_at"),
+  passwordChangedAt: timestamp("password_changed_at").defaultNow(),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  lockedUntil: timestamp("locked_until"),
 });
 
 // Admin Portal users (separate authentication system)
 export const adminUsers = pgTable("admin_users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  passwordHash: text("password_hash").notNull(), // Changed from password to passwordHash
   email: text("email").notNull().unique(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   lastLoginAt: timestamp("last_login_at"),
+  passwordChangedAt: timestamp("password_changed_at").defaultNow(),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  lockedUntil: timestamp("locked_until"),
+});
+
+// User sessions for secure authentication
+export const userSessions = pgTable("user_sessions", {
+  id: text("id").primaryKey(), // UUID session ID
+  userId: integer("user_id").notNull(),
+  userType: text("user_type").notNull(), // 'clinical' or 'admin'
+  ipAddress: text("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastActivity: timestamp("last_activity").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  isActive: boolean("is_active").default(true),
 });
 
 // Cohort definitions for injury types

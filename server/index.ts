@@ -1,9 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupSecurityMiddleware, securityErrorHandler, setupHealthCheck } from "./middleware.js";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config();
 
 // Check if we should run the compliance portal instead
 if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
@@ -31,62 +36,63 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
 } else {
   // Run the main application
   const app = express();
-  app.use(express.json({ limit: '10mb' })); // Increase limit for motion data
-  app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+  
+  // Validate required environment variables for production
+  if (process.env.NODE_ENV === 'production') {
+    const requiredVars = ['DATABASE_URL', 'JWT_SECRET', 'ENCRYPTION_KEY'];
+    const missingVars = requiredVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      console.error('Missing required environment variables:', missingVars);
+      process.exit(1);
+    }
+  }
 
-  // Serve attached assets statically with proper MIME types
+  // Setup security middleware FIRST
+  setupSecurityMiddleware(app);
+  
+  // Setup health check endpoints
+  setupHealthCheck(app);
+  
+  // Body parsing with size limits
+  app.use(express.json({ 
+    limit: '10mb', // Increase limit for motion data
+    type: ['application/json', 'text/plain']
+  }));
+  app.use(express.urlencoded({ 
+    extended: false, 
+    limit: '10mb',
+    parameterLimit: 20
+  }));
+
+  // Serve attached assets statically with proper MIME types and security
   app.use('/attached_assets', express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), '../attached_assets'), {
+    maxAge: '1h', // Cache for 1 hour
     setHeaders: (res, filePath) => {
+      // Security headers for static assets
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      
+      // Set appropriate MIME types
       if (filePath.endsWith('.mov')) {
         res.setHeader('Content-Type', 'video/quicktime');
       } else if (filePath.endsWith('.mp4')) {
         res.setHeader('Content-Type', 'video/mp4');
       } else if (filePath.endsWith('.webm')) {
         res.setHeader('Content-Type', 'video/webm');
+      } else if (filePath.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/png');
+      } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
       }
     }
   }));
 
-  app.use((req, res, next) => {
-    const start = Date.now();
-    const path = req.path;
-    let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-    const originalResJson = res.json;
-    res.json = function (bodyJson, ...args) {
-      capturedJsonResponse = bodyJson;
-      return originalResJson.apply(res, [bodyJson, ...args]);
-    };
-
-    res.on("finish", () => {
-      const duration = Date.now() - start;
-      if (path.startsWith("/api")) {
-        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-        if (capturedJsonResponse) {
-          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-        }
-
-        if (logLine.length > 80) {
-          logLine = logLine.slice(0, 79) + "…";
-        }
-
-        log(logLine);
-      }
-    });
-
-    next();
-  });
-
   (async () => {
     const server = await registerRoutes(app);
 
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-
-      res.status(status).json({ message });
-      throw err;
-    });
+    // Use secure error handler
+    app.use(securityErrorHandler);
 
     // importantly only setup vite in development and after
     // setting up all the other routes so the catch-all route
@@ -97,16 +103,17 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
       serveStatic(app);
     }
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = 5000;
+    // Use Railway's PORT or default to 5000
+    const port = process.env.PORT || 5000;
     server.listen({
-      port,
+      port: parseInt(port.toString()),
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      log(`serving on port ${port}`);
+      log(`🚀 Secure server running on port ${port}`);
+      log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      log(`🔒 Security features: JWT auth, rate limiting, CORS, helmet`);
+      log(`📋 Health check: http://localhost:${port}/health`);
     });
   })();
 }

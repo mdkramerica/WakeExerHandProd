@@ -14,6 +14,7 @@ import {
   dataExports,
   quickDashResponses,
   studyVisits,
+  userSessions,
   type User, 
   type InsertUser,
   type Assessment,
@@ -49,6 +50,7 @@ import {
   type PatientEnrollment
 } from "@shared/schema";
 import { db } from "./db";
+import { PasswordService, TokenService, SessionManager, AuditLogger } from './security.js';
 import { eq, and, desc, sql, count, avg, asc } from "drizzle-orm";
 
 export interface IStorage {
@@ -185,10 +187,20 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createClinicalUser(insertUser: InsertClinicalUser): Promise<ClinicalUser> {
+  async createClinicalUser(insertUser: InsertClinicalUser & { password: string }): Promise<ClinicalUser> {
+    // Hash the password before storing
+    const passwordHash = await PasswordService.hash(insertUser.password);
+    
+    const { password, ...userDataWithoutPassword } = insertUser;
+    const userDataWithHash = {
+      ...userDataWithoutPassword,
+      passwordHash,
+      passwordChangedAt: new Date()
+    };
+    
     const [user] = await db
       .insert(clinicalUsers)
-      .values(insertUser)
+      .values(userDataWithHash)
       .returning();
     return user;
   }
@@ -202,17 +214,120 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async authenticateClinicalUser(username: string, password: string): Promise<ClinicalUser | null> {
+  async authenticateClinicalUser(username: string, password: string, ipAddress: string): Promise<{ user: ClinicalUser; tokens: { accessToken: string; refreshToken: string; sessionId: string } } | null> {
+    // Get user by username
     const [user] = await db
       .select()
       .from(clinicalUsers)
-      .where(and(eq(clinicalUsers.username, username), eq(clinicalUsers.password, password), eq(clinicalUsers.isActive, true)));
+      .where(and(
+        eq(clinicalUsers.username, username), 
+        eq(clinicalUsers.isActive, true)
+      ));
     
-    if (user) {
-      await this.updateClinicalUser(user.id, { lastLoginAt: new Date() });
-      return user;
+    if (!user) {
+      await AuditLogger.logSecurityEvent({
+        event: 'login_attempt_invalid_user',
+        severity: 'medium',
+        ipAddress,
+        details: { username }
+      });
+      return null;
     }
-    return null;
+
+    // Check if account is locked
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      await AuditLogger.logSecurityEvent({
+        event: 'login_attempt_locked_account',
+        severity: 'medium',
+        ipAddress,
+        details: { username, lockedUntil: user.lockedUntil }
+      });
+      return null;
+    }
+
+    // Verify password
+    const isPasswordValid = await PasswordService.verify(password, user.passwordHash);
+    
+    if (!isPasswordValid) {
+      // Increment failed login attempts
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+      const updates: any = { failedLoginAttempts: failedAttempts };
+      
+      // Lock account after 5 failed attempts for 30 minutes
+      if (failedAttempts >= 5) {
+        updates.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+      }
+      
+      await this.updateClinicalUser(user.id, updates);
+      
+      await AuditLogger.logSecurityEvent({
+        event: 'login_failed_invalid_password',
+        severity: failedAttempts >= 5 ? 'high' : 'medium',
+        ipAddress,
+        details: { username, failedAttempts }
+      });
+      
+      return null;
+    }
+
+    // Successful login - reset failed attempts and generate tokens
+    const sessionId = TokenService.generateSessionId();
+    
+    // Create session
+    SessionManager.createSession(sessionId, {
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      ipAddress
+    });
+
+    // Generate tokens
+    const accessToken = TokenService.generateAccessToken({
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      sessionId
+    });
+    
+    const refreshToken = TokenService.generateRefreshToken({
+      userId: user.id,
+      sessionId
+    });
+
+    // Store session in database
+    await db.insert(userSessions).values({
+      id: sessionId,
+      userId: user.id,
+      userType: 'clinical',
+      ipAddress,
+      expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000) // 8 hours
+    });
+
+    // Update user login info
+    await this.updateClinicalUser(user.id, { 
+      lastLoginAt: new Date(),
+      failedLoginAttempts: 0,
+      lockedUntil: null
+    });
+
+    // Log successful login
+    await AuditLogger.logAccess({
+      userId: user.id,
+      username: user.username,
+      action: 'login_success',
+      resource: 'clinical_system',
+      ipAddress,
+      success: true
+    });
+
+    return {
+      user,
+      tokens: {
+        accessToken,
+        refreshToken,
+        sessionId
+      }
+    };
   }
 
   // Admin User methods
@@ -226,10 +341,20 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createAdminUser(insertUser: InsertAdminUser): Promise<AdminUser> {
+  async createAdminUser(insertUser: InsertAdminUser & { password: string }): Promise<AdminUser> {
+    // Hash the password before storing
+    const passwordHash = await PasswordService.hash(insertUser.password);
+    
+    const { password, ...userDataWithoutPassword } = insertUser;
+    const userDataWithHash = {
+      ...userDataWithoutPassword,
+      passwordHash,
+      passwordChangedAt: new Date()
+    };
+    
     const [user] = await db
       .insert(adminUsers)
-      .values(insertUser)
+      .values(userDataWithHash)
       .returning();
     return user;
   }
@@ -243,17 +368,120 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async authenticateAdminUser(username: string, password: string): Promise<AdminUser | null> {
+  async authenticateAdminUser(username: string, password: string, ipAddress: string): Promise<{ user: AdminUser; tokens: { accessToken: string; refreshToken: string; sessionId: string } } | null> {
+    // Get user by username
     const [user] = await db
       .select()
       .from(adminUsers)
-      .where(and(eq(adminUsers.username, username), eq(adminUsers.password, password), eq(adminUsers.isActive, true)));
+      .where(and(
+        eq(adminUsers.username, username), 
+        eq(adminUsers.isActive, true)
+      ));
     
-    if (user) {
-      await this.updateAdminUser(user.id, { lastLoginAt: new Date() });
-      return user;
+    if (!user) {
+      await AuditLogger.logSecurityEvent({
+        event: 'admin_login_attempt_invalid_user',
+        severity: 'high',
+        ipAddress,
+        details: { username }
+      });
+      return null;
     }
-    return null;
+
+    // Check if account is locked
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      await AuditLogger.logSecurityEvent({
+        event: 'admin_login_attempt_locked_account',
+        severity: 'high',
+        ipAddress,
+        details: { username, lockedUntil: user.lockedUntil }
+      });
+      return null;
+    }
+
+    // Verify password
+    const isPasswordValid = await PasswordService.verify(password, user.passwordHash);
+    
+    if (!isPasswordValid) {
+      // Increment failed login attempts
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+      const updates: any = { failedLoginAttempts: failedAttempts };
+      
+      // Lock account after 3 failed attempts for admin (more strict)
+      if (failedAttempts >= 3) {
+        updates.lockedUntil = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      }
+      
+      await this.updateAdminUser(user.id, updates);
+      
+      await AuditLogger.logSecurityEvent({
+        event: 'admin_login_failed_invalid_password',
+        severity: 'critical',
+        ipAddress,
+        details: { username, failedAttempts }
+      });
+      
+      return null;
+    }
+
+    // Successful login - reset failed attempts and generate tokens
+    const sessionId = TokenService.generateSessionId();
+    
+    // Create session
+    SessionManager.createSession(sessionId, {
+      userId: user.id,
+      username: user.username,
+      role: 'admin',
+      ipAddress
+    });
+
+    // Generate tokens
+    const accessToken = TokenService.generateAccessToken({
+      userId: user.id,
+      username: user.username,
+      role: 'admin',
+      sessionId
+    });
+    
+    const refreshToken = TokenService.generateRefreshToken({
+      userId: user.id,
+      sessionId
+    });
+
+    // Store session in database
+    await db.insert(userSessions).values({
+      id: sessionId,
+      userId: user.id,
+      userType: 'admin',
+      ipAddress,
+      expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000) // 8 hours
+    });
+
+    // Update user login info
+    await this.updateAdminUser(user.id, { 
+      lastLoginAt: new Date(),
+      failedLoginAttempts: 0,
+      lockedUntil: null
+    });
+
+    // Log successful admin login
+    await AuditLogger.logAccess({
+      userId: user.id,
+      username: user.username,
+      action: 'admin_login_success',
+      resource: 'admin_system',
+      ipAddress,
+      success: true
+    });
+
+    return {
+      user,
+      tokens: {
+        accessToken,
+        refreshToken,
+        sessionId
+      }
+    };
   }
 
   // Helper function to get assessment count by injury type

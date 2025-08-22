@@ -25,8 +25,12 @@ import {
   insertAssessmentTypeSchema,
   insertPatientAssessmentSchema,
   insertAuditLogSchema,
-  patientEnrollmentSchema
+  patientEnrollmentSchema,
+  userSessions
 } from "@shared/schema";
+import { TokenService, SessionManager, AuditLogger } from './security.js';
+import { eq } from 'drizzle-orm';
+import { db } from './db.js';
 
 // Authentication middleware - will be updated with storage reference
 let requireAuth: any;
@@ -91,34 +95,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = loginSchema.parse(req.body);
-      console.log(`Login attempt for username: ${username}`);
+      console.log(`🔐 Secure login attempt for username: ${username}`);
       
-      const user = await storage.authenticateClinicalUser(username, password);
-      console.log(`Authentication result:`, user ? 'success' : 'failed');
+      const result = await storage.authenticateClinicalUser(username, password, req.ip || 'unknown');
       
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      if (!result) {
+        return res.status(401).json({ 
+          message: "Invalid credentials or account locked",
+          code: "AUTHENTICATION_FAILED"
+        });
       }
       
-      // Simple token (in production, use JWT)
-      const token = user.id.toString();
+      const { user, tokens } = result;
       
-      await auditLog(user.id, "login", undefined, { username }, req);
+      // Set secure HTTP-only cookie for refresh token
+      res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
       
       res.json({ 
-        token, 
+        accessToken: tokens.accessToken,
         user: { 
           id: user.id, 
           username: user.username, 
           email: user.email, 
           firstName: user.firstName, 
           lastName: user.lastName, 
-          role: user.role 
-        } 
+          role: user.role,
+          lastLoginAt: user.lastLoginAt
+        },
+        sessionInfo: {
+          sessionId: tokens.sessionId,
+          expiresIn: '8h'
+        }
       });
     } catch (error) {
-      console.error('Login error:', error);
-      res.status(400).json({ message: "Invalid request format" });
+      console.error('🚨 Login error:', error);
+      res.status(400).json({ 
+        message: "Invalid request format",
+        code: "INVALID_REQUEST"
+      });
+    }
+  });
+
+  // Clinical Dashboard Logout
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+          const decoded = TokenService.verifyToken(token, 'access');
+          
+          // Destroy session
+          SessionManager.destroySession(decoded.sessionId);
+          
+          // Mark session as inactive in database
+          await db.update(userSessions)
+            .set({ isActive: false })
+            .where(eq(userSessions.id, decoded.sessionId));
+          
+          // Log logout
+          await AuditLogger.logAccess({
+            userId: decoded.userId,
+            username: decoded.username,
+            action: 'logout',
+            resource: 'clinical_system',
+            ipAddress: req.ip,
+            success: true
+          });
+        } catch (error) {
+          // Token invalid but still clear cookies
+        }
+      }
+      
+      // Clear refresh token cookie
+      res.clearCookie('refreshToken');
+      
+      res.json({ 
+        message: 'Logged out successfully',
+        code: 'LOGOUT_SUCCESS'
+      });
+    } catch (error) {
+      console.error('🚨 Logout error:', error);
+      res.status(500).json({ 
+        message: 'Logout failed',
+        code: 'LOGOUT_ERROR'
+      });
+    }
+  });
+
+  // Admin Logout
+  app.post("/api/admin/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+          const decoded = TokenService.verifyToken(token, 'access');
+          
+          // Destroy session
+          SessionManager.destroySession(decoded.sessionId);
+          
+          // Mark session as inactive in database
+          await db.update(userSessions)
+            .set({ isActive: false })
+            .where(eq(userSessions.id, decoded.sessionId));
+          
+          // Log admin logout
+          await AuditLogger.logAccess({
+            userId: decoded.userId,
+            username: decoded.username,
+            action: 'admin_logout',
+            resource: 'admin_system',
+            ipAddress: req.ip,
+            success: true
+          });
+        } catch (error) {
+          // Token invalid but still clear cookies
+        }
+      }
+      
+      // Clear admin refresh token cookie
+      res.clearCookie('adminRefreshToken');
+      
+      res.json({ 
+        message: 'Admin logged out successfully',
+        code: 'ADMIN_LOGOUT_SUCCESS'
+      });
+    } catch (error) {
+      console.error('🚨 Admin logout error:', error);
+      res.status(500).json({ 
+        message: 'Admin logout failed',
+        code: 'ADMIN_LOGOUT_ERROR'
+      });
     }
   });
 
@@ -1848,33 +1961,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // AS-001: Admin Login
+  // AS-001: Admin Login (Secure)
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = adminLoginSchema.parse(req.body);
-      console.log(`Admin login attempt for username: ${username}`);
+      console.log(`🔐 Secure admin login attempt for username: ${username}`);
       
-      const user = await storage.authenticateAdminUser(username, password);
+      const result = await storage.authenticateAdminUser(username, password, req.ip || 'unknown');
       
-      if (user) {
-        console.log("Admin authentication result: success");
-        res.json({
-          token: user.id.toString(),
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-          }
+      if (!result) {
+        return res.status(401).json({ 
+          message: "Invalid credentials or account locked",
+          code: "ADMIN_AUTHENTICATION_FAILED"
         });
-      } else {
-        console.log("Admin authentication result: failure");
-        res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      const { user, tokens } = result;
+      
+      // Set secure HTTP-only cookie for refresh token
+      res.cookie('adminRefreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      
+      res.json({
+        accessToken: tokens.accessToken,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          lastLoginAt: user.lastLoginAt
+        },
+        sessionInfo: {
+          sessionId: tokens.sessionId,
+          expiresIn: '8h'
+        }
+      });
     } catch (error) {
-      console.error("Admin login error:", error);
-      res.status(400).json({ message: "Invalid request data" });
+      console.error("🚨 Admin login error:", error);
+      res.status(400).json({ 
+        message: "Invalid request data",
+        code: "INVALID_REQUEST"
+      });
     }
   });
 

@@ -3521,6 +3521,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Additional routes without /api prefix for frontend compatibility
+  // These duplicate the /api routes to handle cases where frontend calls wrong URLs
+  
+  app.post("/users/verify-code", async (req, res) => {
+    try {
+      const { code } = z.object({ code: z.string().min(6) }).parse(req.body);
+      
+      // Check if user already exists (legacy users or returning patients)
+      let user = await storage.getUserByCode(code);
+      
+      if (user) {
+        return res.json({ 
+          exists: true, 
+          user: { 
+            id: user.id, 
+            code: user.code, 
+            firstName: user.firstName, 
+            lastName: user.lastName,
+            injuryType: user.injuryType,
+            isFirstTime: user.isFirstTime 
+          } 
+        });
+      }
+      
+      // For new users, create a placeholder entry
+      user = await storage.createUser({
+        code,
+        firstName: null,
+        lastName: null,
+        email: null,
+        isFirstTime: true,
+        isActive: true,
+        injuryType: null,
+        surgeryDate: null,
+      });
+      
+      res.json({ 
+        exists: false, 
+        user: { 
+          id: user.id, 
+          code: user.code, 
+          isFirstTime: true 
+        } 
+      });
+    } catch (error) {
+      console.error('Verify code error:', error);
+      res.status(400).json({ message: "Invalid code format" });
+    }
+  });
+
+  app.get("/users/by-code/:code", async (req, res) => {
+    try {
+      const { code } = req.params;
+      
+      if (!code || code.length < 6) {
+        return res.status(400).json({ message: "Invalid code format" });
+      }
+      
+      const user = await storage.getUserByCode(code);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ user });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

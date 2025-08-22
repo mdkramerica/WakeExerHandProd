@@ -178,8 +178,10 @@ export function setupSecurityMiddleware(app: Express): void {
       '/admin/login',
       '/users/by-code', // Patient access by code
       '/users/verify-code', // Patient code verification
-      '/assessments', // Assessment data for patients
       '/users/', // Allow all user endpoints for now
+      '/assessments', // Assessment data for patients
+      '/patients/by-code', // Patient data access by code
+      '/patients/', // Patient endpoints
     ];
 
     if (publicEndpoints.some(endpoint => req.path.startsWith(endpoint))) {

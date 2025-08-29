@@ -176,7 +176,6 @@ export function setupSecurityMiddleware(app: Express): void {
       '/health',
       '/auth/login',
       '/admin/login',
-      '/admin/setup-emergency-admin', // Emergency admin setup (temporary)
       '/users/by-code', // Patient access by code
       '/users/verify-code', // Patient code verification
       '/users/', // Allow all user endpoints for now

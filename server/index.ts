@@ -110,6 +110,31 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
 
   (async () => {
     const server = await registerRoutes(app);
+    
+    // One-time admin setup for production
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const { DatabaseStorage } = await import("./storage.js");
+        const storage = new DatabaseStorage();
+        
+        const existingAdmin = await storage.getAdminUserByUsername('admin');
+        if (!existingAdmin) {
+          await storage.createAdminUser({
+            username: 'admin',
+            password: 'admin123',
+            email: 'admin@wakeexer.com',
+            firstName: 'Admin',
+            lastName: 'User',
+            isActive: true
+          });
+          console.log('✅ Production admin user created: admin/admin123');
+        } else {
+          console.log('✅ Production admin user already exists');
+        }
+      } catch (error) {
+        console.error('⚠️ Admin user setup error (non-critical):', error.message);
+      }
+    }
 
     // Register non-API routes BEFORE static middleware to ensure they take precedence
     const { getUserByCode } = await import("./storage.js");

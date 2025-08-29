@@ -2026,15 +2026,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const token = authHeader.substring(7);
     try {
-      // Simple token validation (in production, use JWT)
-      const userId = parseInt(token);
-      const user = await storage.getAdminUser(userId);
-      if (!user || !user.isActive) {
-        return res.status(401).json({ message: 'Invalid token' });
+      // Validate JWT token for admin
+      const payload = TokenService.verifyToken(token, 'access');
+      
+      if (!payload || payload.role !== 'admin') {
+        return res.status(401).json({ message: 'Invalid token or insufficient permissions' });
       }
+      
+      // Get user from token payload
+      const user = await storage.getAdminUser(payload.userId);
+      if (!user || !user.isActive) {
+        return res.status(401).json({ message: 'User not found or inactive' });
+      }
+      
       req.user = user;
       next();
     } catch (error) {
+      console.error('Admin auth error:', error);
       return res.status(401).json({ message: 'Invalid token' });
     }
   };

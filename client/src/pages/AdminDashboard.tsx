@@ -102,6 +102,13 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
   const getAuthHeaders = () => {
     const token = sessionStorage.getItem('adminToken');
+    console.log('getAuthHeaders - token exists:', !!token, 'length:', token?.length);
+    
+    if (!token || token === 'undefined' || token === 'null') {
+      console.error('No valid admin token found!');
+      throw new Error('No admin token available');
+    }
+    
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -137,10 +144,28 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         setPatients(patientsData);
         setFilteredPatients(patientsData);
       } else {
+        const complianceError = complianceRes.ok ? 'OK' : await complianceRes.text();
+        const patientsError = patientsRes.ok ? 'OK' : await patientsRes.text();
+        
         console.error('API errors:', {
-          compliance: complianceRes.ok ? 'OK' : await complianceRes.text(),
-          patients: patientsRes.ok ? 'OK' : await patientsRes.text()
+          compliance: complianceError,
+          patients: patientsError
         });
+        
+        // If we get 401 errors, the token is invalid - force re-login
+        if (complianceRes.status === 401 || patientsRes.status === 401) {
+          console.log('Invalid admin token detected, clearing session...');
+          sessionStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminUser');
+          toast({
+            title: "Session Expired",
+            description: "Please log in again",
+            variant: "destructive"
+          });
+          // Force page reload to show login form
+          window.location.reload();
+          return;
+        }
       }
 
       if (injuryTypesRes.ok) {

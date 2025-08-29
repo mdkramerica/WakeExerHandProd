@@ -233,9 +233,9 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   };
 
   const getQualityBadgeVariant = (score: number) => {
-    if (score >= 90) return 'default'; // Green
-    if (score >= 70) return 'secondary'; // Yellow  
-    return 'destructive'; // Red
+    if (score >= 90) return 'success'; // Green for excellent quality
+    if (score >= 70) return 'warning'; // Yellow for good quality  
+    return 'danger'; // Red for poor quality
   };
 
   if (!patient) return null;

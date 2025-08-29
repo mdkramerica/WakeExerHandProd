@@ -1621,15 +1621,7 @@ export class DatabaseStorage implements IStorage {
     return code;
   }
 
-  async getPatientByAccessCode(accessCode: string): Promise<Patient | undefined> {
-    try {
-      const result = await db.select().from(patients).where(eq(patients.accessCode, accessCode)).limit(1);
-      return result[0] || undefined;
-    } catch (error) {
-      console.error('Error getting patient by access code:', error);
-      return undefined;
-    }
-  }
+
 
   async getAssessmentsForInjury(injuryType: string): Promise<Assessment[]> {
     const allAssessments = await db.select().from(assessments).where(eq(assessments.isActive, true));
@@ -1749,9 +1741,7 @@ export class DatabaseStorage implements IStorage {
     return this.getAssessmentsForInjury(injuryType);
   }
 
-  async getPatientAssessmentHistory(patientId: number): Promise<PatientAssessment[]> {
-    return this.getPatientAssessments(patientId);
-  }
+
 
   async createStudyVisit(insertStudyVisit: InsertStudyVisit): Promise<StudyVisit> {
     const [studyVisit] = await db
@@ -1938,14 +1928,7 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, ...updates };
-    this.users.set(id, updatedUser);
-    return updatedUser;
-  }
+
 
   // Assessment methods
   async getAssessments(): Promise<Assessment[]> {
@@ -2109,22 +2092,12 @@ export class MemStorage implements IStorage {
   async getDataExport(id: number): Promise<DataExport | undefined> { return undefined; }
   async updateDataExport(id: number, updates: Partial<DataExport>): Promise<DataExport | undefined> { return undefined; }
   async getUserById(id: number): Promise<User | undefined> { return this.getUser(id); }
-  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    const updatedUser = { ...user, ...updates };
-    this.users.set(id, updatedUser);
-    return updatedUser;
-  }
+
   async deleteUser(id: number): Promise<boolean> {
     return this.users.delete(id);
   }
 
-  async getPatientByAccessCode(accessCode: string): Promise<Patient | undefined> {
-    // Memory storage doesn't have patients table, so return undefined
-    // This will fall back to legacy behavior for development
-    return undefined;
-  }
+
   async getAssessmentsForInjuryType(injuryType: string): Promise<Assessment[]> {
     return this.getAssessmentsForInjury(injuryType);
   }
@@ -2138,9 +2111,7 @@ export class MemStorage implements IStorage {
       }
     }
   }
-  async getPatientAssessmentHistory(patientId: number): Promise<PatientAssessment[]> {
-    return [];
-  }
+
   async createStudyVisit(visit: InsertStudyVisit): Promise<StudyVisit> {
     throw new Error('Not implemented in MemStorage');
   }

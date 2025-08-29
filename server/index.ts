@@ -1,3 +1,8 @@
+import dotenv from "dotenv";
+
+// Load environment variables FIRST before any other imports
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -5,10 +10,6 @@ import { setupSecurityMiddleware, securityErrorHandler, setupHealthCheck } from 
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
 
 // Check if we should run the compliance portal instead
 if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
@@ -84,6 +85,25 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
         res.setHeader('Content-Type', 'image/png');
       } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
         res.setHeader('Content-Type', 'image/jpeg');
+      }
+    }
+  }));
+
+  // Serve videos from client/public/videos as fallback for legacy video URLs
+  app.use('/videos', express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), '../client/public/videos'), {
+    maxAge: '1h', // Cache for 1 hour
+    setHeaders: (res, filePath) => {
+      // Security headers for static assets
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      
+      // Set appropriate MIME types for video files
+      if (filePath.endsWith('.mov')) {
+        res.setHeader('Content-Type', 'video/quicktime');
+      } else if (filePath.endsWith('.mp4')) {
+        res.setHeader('Content-Type', 'video/mp4');
+      } else if (filePath.endsWith('.webm')) {
+        res.setHeader('Content-Type', 'video/webm');
       }
     }
   }));
@@ -213,11 +233,7 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
 
     // Use Railway's PORT or default to 5000
     const port = process.env.PORT || 5000;
-    server.listen({
-      port: parseInt(port.toString()),
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
+    server.listen(port, () => {
       log(`🚀 Secure server running on port ${port}`);
       log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       log(`🔒 Security features: JWT auth, rate limiting, CORS, helmet`);

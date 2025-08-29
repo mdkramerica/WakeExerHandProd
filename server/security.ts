@@ -367,3 +367,4 @@ export class SessionManager {
 setInterval(() => {
   SessionManager.cleanupExpiredSessions();
 }, 60 * 60 * 1000);
+

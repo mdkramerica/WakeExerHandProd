@@ -330,3 +330,4 @@ pg_dump $DATABASE_URL > "backup-$(date +%Y%m%d).sql"
 - Security Questions: Monitor audit logs for anomalies
 
 This deployment guide ensures your hand assessment platform meets HIPAA compliance requirements while providing enterprise-grade security on Railway's infrastructure.
+

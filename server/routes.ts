@@ -3350,7 +3350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         <body>
           <div class="header">
             <div class="logo-section">
-              <img src="data:image/png;base64,$(cat /tmp/logo_single_line.txt)" alt="ExerAI Logo" class="logo" width="120" height="40" />
+              <img src="/images/exer-logo.png" alt="ExerAI Logo" class="logo" width="120" height="40" />
             </div>
             <div class="header-content">
               <h1>DASH Assessment Report</h1>

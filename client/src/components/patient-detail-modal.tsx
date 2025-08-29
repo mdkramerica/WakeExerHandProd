@@ -242,7 +242,7 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="patient-details">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Patient Details: {patient.alias}

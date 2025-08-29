@@ -16,7 +16,7 @@
   --primary-foreground: 255 255 255; /* #FFFFFF - white */
   --secondary: 249 250 251; /* #F9FAFB */
   --secondary-foreground: 31 41 55; /* #1F2937 */
-  --muted: 243 244 246; /* #F3F4F6 - gray-100 */
+  --muted: 240 253 244; /* #F0FDF4 - green-50 for dashboard theme */
   --muted-foreground: 75 85 99; /* #4B5563 - gray-600 */
   --accent: 239 246 255; /* #EFF6FF - blue-50 */
   --accent-foreground: 31 41 55; /* #1F2937 */
@@ -180,7 +180,7 @@ article {
   background-color: #FFFFFF !important;
 }
 
-/* Fix for cards inside modals */
+/* Fix for cards inside modals - Use green theme for patient details */
 [data-radix-dialog-content] .Card,
 [data-radix-dialog-content] [class*="Card"],
 [data-radix-alert-dialog-content] .Card,
@@ -188,6 +188,29 @@ article {
 [role="dialog"] .Card,
 [role="dialog"] [class*="Card"] {
   background-color: #FFFFFF !important;
+  border: 1px solid #BBF7D0 !important; /* Green-200 border */
+}
+
+/* Patient Detail Modal specific styling - Green theme */
+[data-radix-dialog-content]:has([data-testid="patient-details"]),
+[data-radix-dialog-content] .max-w-6xl {
+  background-color: #F7FEF9 !important; /* Very light green background */
+}
+
+/* Summary cards in patient modal - Green accents */
+[data-radix-dialog-content] .grid .Card:first-child {
+  background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%) !important;
+  border: 2px solid #BBF7D0 !important;
+}
+
+[data-radix-dialog-content] .grid .Card:nth-child(2) {
+  background: linear-gradient(135deg, #ECFDF5 0%, #FFFFFF 100%) !important;
+  border: 2px solid #BBF7D0 !important;
+}
+
+[data-radix-dialog-content] .grid .Card:nth-child(3) {
+  background: linear-gradient(135deg, #DCFCE7 0%, #FFFFFF 100%) !important;
+  border: 2px solid #BBF7D0 !important;
 }
 
 /* Override any yellow background classes globally to prevent the issue */
@@ -196,11 +219,18 @@ article {
 .bg-yellow-200,
 .bg-yellow-300,
 .bg-yellow-400,
-.bg-yellow-500,
-[data-state="active"],
+.bg-yellow-500 {
+  background-color: #F0FDF4 !important; /* Use green-50 instead of yellow */
+  color: #16A34A !important; /* Green-600 text */
+}
+
+/* CRITICAL: Override tab active states that might be causing yellow */
+[data-state="active"]:not(.badge):not([data-badge]),
 [data-radix-tabs-trigger][data-state="active"],
-button[data-state="active"] {
-  background-color: #FFFFFF !important;
+button[data-state="active"]:not(.badge):not([data-badge]) {
+  background-color: #16A34A !important; /* Green-600 for active states */
+  color: #FFFFFF !important; /* White text */
+  border-color: #16A34A !important;
 }
 
 /* But allow yellow badges and intentional yellow elements */
@@ -218,18 +248,26 @@ div[class*="p-2 rounded-md bg-yellow-100"] {
   color: rgb(133 77 14) !important; /* original yellow-800 */
 }
 
-/* Fix for tabs and their active states */
-[data-radix-tabs-list] {
-  background-color: #FFFFFF !important;
+/* Fix for tabs and their active states - Use green dashboard theme */
+[data-radix-tabs-list],
+.TabsList {
+  background-color: #F0FDF4 !important; /* Green-50 background for tabs container */
+  border: 1px solid #16A34A !important; /* Green-600 border */
 }
 
-[data-radix-tabs-trigger] {
-  background-color: #F3F4F6 !important;
+[data-radix-tabs-trigger],
+.TabsTrigger {
+  background-color: #FFFFFF !important; /* White background for inactive tabs */
+  color: #16A34A !important; /* Green-600 text */
+  border: 1px solid #BBF7D0 !important; /* Green-200 border */
 }
 
-[data-radix-tabs-trigger][data-state="active"] {
-  background-color: #FFFFFF !important;
-  border-bottom: 2px solid #3B82F6 !important;
+[data-radix-tabs-trigger][data-state="active"],
+.TabsTrigger[data-state="active"] {
+  background-color: #16A34A !important; /* Green-600 background for active tab */
+  color: #FFFFFF !important; /* White text for active tab */
+  border: 1px solid #16A34A !important; /* Green-600 border */
+  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2) !important; /* Green shadow */
 }
 
 /* Fix for badges specifically - prevent all yellow badges */
@@ -242,10 +280,15 @@ div[class*="p-2 rounded-md bg-yellow-100"] {
   color: #374151 !important;
 }
 
-/* Override any progress bar backgrounds */
+/* Override any progress bar backgrounds - Use green theme */
 [data-radix-progress-root],
 [role="progressbar"] {
-  background-color: #F3F4F6 !important;
+  background-color: #F0FDF4 !important; /* Green-50 background */
+}
+
+/* Progress bar indicators should be green */
+[data-radix-progress-indicator] {
+  background-color: #16A34A !important; /* Green-600 for progress */
 }
 
 /* Ensure specific page containers don't have yellow backgrounds */

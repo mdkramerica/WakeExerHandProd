@@ -1488,7 +1488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      const userAssessments = await storage.getUserAssessments(user.id);
+      const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
       const assessments = await storage.getAssessments();
       
       // Debug: Check if DASH assessment exists
@@ -1531,8 +1531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sessionNumber: ua.sessionNumber,
           // Include DASH score data - ensure it's always included for DASH assessments
           dashScore: ua.dashScore,
-          // Include repetition data for accurate recalculation
-          repetitionData: ua.repetitionData,
+          // Exclude repetitionData for performance (large JSON field)
         };
       }).sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime());
       

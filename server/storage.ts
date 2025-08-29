@@ -158,6 +158,7 @@ export interface IStorage {
   getAssessment(id: number): Promise<Assessment | undefined>;
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   getUserAssessments(userId: number): Promise<UserAssessment[]>;
+  getUserAssessmentsForHistory(userId: number): Promise<UserAssessment[]>;
   getUserAssessmentById(id: number): Promise<UserAssessment | undefined>;
   getUserAssessment(userId: number, assessmentId: number): Promise<UserAssessment | undefined>;
   createUserAssessment(userAssessment: InsertUserAssessment): Promise<UserAssessment>;
@@ -1662,6 +1663,41 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(userAssessments).where(eq(userAssessments.userId, userId));
   }
 
+  // Optimized method for assessment history - excludes heavy JSON fields for better performance
+  async getUserAssessmentsForHistory(userId: number): Promise<UserAssessment[]> {
+    return await db.select({
+      id: userAssessments.id,
+      userId: userAssessments.userId,
+      assessmentId: userAssessments.assessmentId,
+      sessionNumber: userAssessments.sessionNumber,
+      isCompleted: userAssessments.isCompleted,
+      completedAt: userAssessments.completedAt,
+      qualityScore: userAssessments.qualityScore,
+      // Include specific ROM fields but exclude heavy JSON data
+      totalActiveRom: userAssessments.totalActiveRom,
+      indexFingerRom: userAssessments.indexFingerRom,
+      middleFingerRom: userAssessments.middleFingerRom,
+      ringFingerRom: userAssessments.ringFingerRom,
+      pinkyFingerRom: userAssessments.pinkyFingerRom,
+      kapandjiScore: userAssessments.kapandjiScore,
+      maxWristFlexion: userAssessments.maxWristFlexion,
+      maxWristExtension: userAssessments.maxWristExtension,
+      wristFlexionAngle: userAssessments.wristFlexionAngle,
+      wristExtensionAngle: userAssessments.wristExtensionAngle,
+      forearmPronationAngle: userAssessments.forearmPronationAngle,
+      forearmSupinationAngle: userAssessments.forearmSupinationAngle,
+      wristRadialDeviationAngle: userAssessments.wristRadialDeviationAngle,
+      wristUlnarDeviationAngle: userAssessments.wristUlnarDeviationAngle,
+      handType: userAssessments.handType,
+      dashScore: userAssessments.dashScore,
+      // Exclude romData and repetitionData JSON fields for performance
+      // romData: userAssessments.romData,
+      // repetitionData: userAssessments.repetitionData,
+    }).from(userAssessments)
+      .where(eq(userAssessments.userId, userId))
+      .orderBy(desc(userAssessments.completedAt));
+  }
+
   async getUserAssessmentById(id: number): Promise<UserAssessment | undefined> {
     const [userAssessment] = await db.select().from(userAssessments).where(eq(userAssessments.id, id));
     return userAssessment || undefined;
@@ -1976,6 +2012,13 @@ export class MemStorage implements IStorage {
   async getUserAssessments(userId: number): Promise<UserAssessment[]> {
     return Array.from(this.userAssessments.values())
       .filter(ua => ua.userId === userId);
+  }
+
+  async getUserAssessmentsForHistory(userId: number): Promise<UserAssessment[]> {
+    // For memory storage, just use the same method but sorted by completedAt
+    return Array.from(this.userAssessments.values())
+      .filter(ua => ua.userId === userId)
+      .sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime());
   }
 
   async getUserAssessment(userId: number, assessmentId: number): Promise<UserAssessment | undefined> {

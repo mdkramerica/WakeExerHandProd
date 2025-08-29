@@ -182,6 +182,7 @@ export function setupSecurityMiddleware(app: Express): void {
       '/assessments', // Assessment data for patients
       '/patients/by-code', // Patient data access by code
       '/patients/', // Patient endpoints
+      '/user-assessments/', // Patient assessment data access
     ];
 
     if (publicEndpoints.some(endpoint => req.path.startsWith(endpoint))) {

@@ -169,11 +169,11 @@ async function seedDatabase() {
     
     const adminUsersData = [
       {
-        username: 'portaladmin',
-        password: adminUserPassword,
-        email: 'portaladmin@wakeexer.com',
-        firstName: 'Portal',
-        lastName: 'Administrator',
+        username: 'admin',
+        password: 'admin123',
+        email: 'admin@wakeexer.com',
+        firstName: 'Admin',
+        lastName: 'User',
         isActive: true
       }
     ];
@@ -200,7 +200,7 @@ async function seedDatabase() {
     console.log('  - clinician / [check CLINICIAN_DEFAULT_PASSWORD env var]');
     console.log('  - researcher / [check RESEARCHER_DEFAULT_PASSWORD env var]');
     console.log('\nAdmin Users:');
-    console.log('  - portaladmin / [check PORTAL_ADMIN_PASSWORD env var]');
+    console.log('  - admin / admin123');
     console.log('\n⚠️  IMPORTANT: Change default passwords immediately after first login!');
     console.log('📊 Database is ready for HIPAA-compliant production use.');
 

@@ -33,7 +33,7 @@ INSERT INTO clinical_users (username, password_hash, email, first_name, last_nam
 
 -- Create admin users for portal access
 INSERT INTO admin_users (username, password_hash, email, first_name, last_name, is_active, password_changed_at, failed_login_attempts) VALUES
-('portaladmin', '$2b$12$LQv3c1yqBwLVwjIAGOb9Bu4QlHpSmcGhzFm.7kkiMB.JCLb6wLFPW', 'portaladmin@wakeexer.com', 'Portal', 'Administrator', true, NOW(), 0);
+('admin', '$2b$12$LQv3c1yqBwLVwjIAGOb9Bu4QlHpSmcGhzFm.7kkiMB.JCLb6wLFPW', 'admin@wakeexer.com', 'Admin', 'User', true, NOW(), 0);
 
 -- Create injury types for backward compatibility
 INSERT INTO injury_types (name, description, icon) VALUES

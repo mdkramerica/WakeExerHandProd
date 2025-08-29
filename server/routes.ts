@@ -2039,6 +2039,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
+  // Emergency admin setup endpoint (temporary)
+  app.post("/api/admin/setup-emergency-admin", async (req, res) => {
+    try {
+      // Check if admin already exists
+      const existingAdmin = await storage.getAdminUserByUsername('admin');
+      
+      if (!existingAdmin) {
+        // Create admin user directly
+        const adminUser = await storage.createAdminUser({
+          username: 'admin',
+          password: 'admin123',
+          email: 'admin@wakeexer.com',
+          firstName: 'Admin',
+          lastName: 'User',
+          isActive: true
+        });
+        
+        console.log('🚨 Emergency admin user created:', adminUser.username);
+        res.json({ success: true, message: 'Emergency admin user created', username: adminUser.username });
+      } else {
+        res.json({ success: true, message: 'Admin user already exists', username: existingAdmin.username });
+      }
+    } catch (error) {
+      console.error('🚨 Emergency admin setup error:', error);
+      res.status(500).json({ error: 'Failed to create emergency admin user' });
+    }
+  });
+
   // AS-001: Admin Login (Secure)
   app.post("/api/admin/login", async (req, res) => {
     try {

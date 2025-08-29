@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 // Script to update admin credentials in production database
-import { DatabaseStorage } from './server/storage.js';
 import { db } from './server/db.js';
 import { adminUsers } from './shared/schema.js';
 import { eq } from 'drizzle-orm';

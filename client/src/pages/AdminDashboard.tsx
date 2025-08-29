@@ -110,19 +110,37 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
   const fetchData = async () => {
     try {
+      const headers = getAuthHeaders();
+      console.log('Admin fetchData - headers:', headers);
+      console.log('Admin token from sessionStorage:', sessionStorage.getItem('adminToken'));
+      
       const [complianceRes, patientsRes, injuryTypesRes] = await Promise.all([
-        fetch('/api/admin/compliance', { headers: getAuthHeaders() }),
-        fetch('/api/admin/patients', { headers: getAuthHeaders() }),
+        fetch('/api/admin/compliance', { headers }),
+        fetch('/api/admin/patients', { headers }),
         fetch('/api/injury-types')
       ]);
+
+      console.log('API responses:', {
+        compliance: complianceRes.status,
+        patients: patientsRes.status,
+        injuryTypes: injuryTypesRes.status
+      });
 
       if (complianceRes.ok && patientsRes.ok) {
         const complianceData = await complianceRes.json();
         const patientsData = await patientsRes.json();
         
+        console.log('Patients data received:', patientsData.length, 'patients');
+        console.log('Sample patient:', patientsData[0]);
+        
         setComplianceData(complianceData);
         setPatients(patientsData);
         setFilteredPatients(patientsData);
+      } else {
+        console.error('API errors:', {
+          compliance: complianceRes.ok ? 'OK' : await complianceRes.text(),
+          patients: patientsRes.ok ? 'OK' : await patientsRes.text()
+        });
       }
 
       if (injuryTypesRes.ok) {

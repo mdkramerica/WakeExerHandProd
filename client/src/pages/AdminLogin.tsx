@@ -39,10 +39,10 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
         console.log("Admin login successful:", data);
         
         // Store admin session
-        sessionStorage.setItem('adminToken', data.token);
+        sessionStorage.setItem('adminToken', data.accessToken);
         sessionStorage.setItem('adminUser', JSON.stringify(data.user));
         
-        onLogin(data.token, data.user);
+        onLogin(data.accessToken, data.user);
         
         toast({
           title: "Login Successful",

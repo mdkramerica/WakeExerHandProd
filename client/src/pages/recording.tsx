@@ -116,6 +116,14 @@ export default function Recording() {
       
       const userAssessmentId = data?.userAssessment?.id;
       
+      // Debug logging
+      console.log('🔍 Recording Completion Debug:', {
+        responseData: data,
+        userAssessmentId,
+        userCode: currentUser.code,
+        navigationUrl: userAssessmentId ? `/patient/${currentUser.code}/motion-replay/${userAssessmentId}` : 'fallback'
+      });
+      
       toast({
         title: "Assessment Complete!",
         description: "Your range of motion data has been recorded successfully.",

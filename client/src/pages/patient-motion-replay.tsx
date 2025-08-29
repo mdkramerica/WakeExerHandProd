@@ -414,7 +414,15 @@ function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData =
 export default function PatientMotionReplayPage() {
   const { userCode, assessmentId } = useParams<{ userCode: string; assessmentId: string }>();
   
-  const { data: assessmentData, isLoading } = useQuery({
+  // Debug logging
+  console.log('🔍 Motion Replay Debug:', {
+    userCode,
+    assessmentId,
+    assessmentIdType: typeof assessmentId,
+    queryKey: `/api/user-assessments/${assessmentId}/details`
+  });
+  
+  const { data: assessmentData, isLoading, error } = useQuery({
     queryKey: [`/api/user-assessments/${assessmentId}/details`],
     enabled: !!assessmentId,
   });
@@ -432,6 +440,15 @@ export default function PatientMotionReplayPage() {
   const user = (userData as any)?.user;
   const userAssessment = (assessmentData as any)?.userAssessment;
   const motionFrames = (motionData as any)?.motionData || [];
+
+  // Debug logging for API responses
+  console.log('🔍 API Response Debug:', {
+    assessmentData,
+    userAssessment: !!userAssessment,
+    motionData,
+    motionFramesLength: motionFrames.length,
+    error
+  });
 
   // Format assessment date and time
   const formatAssessmentDateTime = (dateString: string) => {

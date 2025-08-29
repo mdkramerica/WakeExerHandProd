@@ -38,10 +38,18 @@ export default function DashAssessmentPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}/history`] });
       queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}/progress`] });
       queryClient.invalidateQueries({ queryKey: [`/api/patients/${userCode}/daily-assessments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/patients/${userCode}/streak`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/patients/${userCode}/calendar`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/patients/by-code/${userCode}`] });
       toast({
         title: "DASH Assessment Completed!",
         description: `Your disability score is ${dashScore?.toFixed(1)} points. Lower scores indicate better function.`,
       });
+      
+      // Navigate back to dashboard after a short delay to show the toast
+      setTimeout(() => {
+        setLocation(`/patient/${userCode}/dashboard`);
+      }, 2000);
     },
     onError: (error) => {
       toast({

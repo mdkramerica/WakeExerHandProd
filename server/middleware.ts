@@ -176,6 +176,7 @@ export function setupSecurityMiddleware(app: Express): void {
       '/health',
       '/auth/login',
       '/admin/login',
+      '/admin/', // Allow all admin endpoints (they have their own auth middleware)
       '/users/by-code', // Patient access by code
       '/users/verify-code', // Patient code verification
       '/users/', // Allow all user endpoints for now

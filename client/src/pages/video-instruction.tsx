@@ -6,12 +6,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Play, Info, AlertTriangle, CheckCircle } from "lucide-react";
 import ProgressBar from "@/components/progress-bar";
 import { apiRequest } from "@/lib/queryClient";
+import { useDeviceDetection } from "@/hooks/use-device-detection";
 
 export default function VideoInstruction() {
   const { id, code } = useParams();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [videoWatched, setVideoWatched] = useState(false);
   const [, setLocation] = useLocation();
+  const deviceInfo = useDeviceDetection();
 
   useEffect(() => {
     const savedUser = sessionStorage.getItem('currentUser');
@@ -119,12 +121,15 @@ export default function VideoInstruction() {
               <div className="bg-gray-900 rounded-xl aspect-video mb-4 lg:mb-6 relative overflow-hidden min-h-[250px] sm:min-h-[400px] lg:min-h-[500px]">
                 <video 
                   controls
-                  autoPlay
+                  autoPlay={!deviceInfo.isMobile} // Respect mobile autoplay policies
                   loop
                   muted
+                  playsInline // Critical for iOS Safari
+                  {...(deviceInfo.isIOS && { 'webkit-playsinline': 'true' })} // Legacy iOS support
                   className="w-full h-full object-contain"
                   onPlay={handleVideoPlay}
-                  preload="metadata"
+                  preload={deviceInfo.isMobile ? "none" : "metadata"} // Save bandwidth on mobile
+                  poster={deviceInfo.isMobile ? undefined : undefined} // Could add poster for mobile
                 >
                   <source src={assessment.videoUrl} type="video/mp4" />
                   Your browser does not support the video tag.

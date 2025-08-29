@@ -550,14 +550,24 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
 
       console.log('🎥 Starting camera initialization...');
 
-      // Get media stream with enhanced constraints
+      // Get mobile-optimized media stream constraints
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const mobileConstraints = {
+        width: { ideal: 640, min: 320 },
+        height: { ideal: 480, min: 240 },
+        facingMode: 'user',
+        frameRate: { ideal: 20, max: 25 } // Battery-conscious for mobile
+      };
+      
+      const desktopConstraints = {
+        width: { ideal: 1280, min: 640 },
+        height: { ideal: 720, min: 480 },
+        facingMode: 'user',
+        frameRate: { ideal: 30, min: 15 }
+      };
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          width: { ideal: 640, min: 320 },
-          height: { ideal: 480, min: 240 },
-          facingMode: 'user',
-          frameRate: { ideal: 30, min: 15 }
-        },
+        video: isMobile ? mobileConstraints : desktopConstraints,
         audio: false
       });
 
@@ -569,9 +579,19 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
         throw new Error('Failed to get canvas 2D context');
       }
 
-      // Enhanced frame processing with separation of concerns
+      // Enhanced frame processing with mobile optimization
+      let frameSkipCounter = 0;
+      const mobileFrameSkip = isMobile ? 2 : 1; // Process every 2nd frame on mobile for battery
+
       const processFrame = async () => {
         try {
+          // Mobile battery optimization: skip frames
+          frameSkipCounter++;
+          if (frameSkipCounter % mobileFrameSkip !== 0) {
+            requestAnimationFrame(processFrame);
+            return;
+          }
+
           // Clear canvas and render video with hand landmarks
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           

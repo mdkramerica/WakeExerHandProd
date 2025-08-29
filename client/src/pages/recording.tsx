@@ -11,12 +11,32 @@ import { useToast } from "@/hooks/use-toast";
 import { calculateCurrentROM, calculateMaxROM, calculateFingerROM, type JointAngles } from "@/lib/rom-calculator";
 import { calculateWristAngles } from "@shared/wrist-calculator";
 import { calculateElbowReferencedWristAngle, calculateMaxElbowWristAngles, resetRecordingSession } from "@shared/elbow-wrist-calculator";
+import { useDeviceDetection } from "@/hooks/use-device-detection";
+import { useTouchGestures } from "@/hooks/use-touch-gestures";
 
 export default function Recording() {
   console.log('🚀 RECORDING COMPONENT MOUNTED/RENDERED');
   const { id, code } = useParams();
   const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const deviceInfo = useDeviceDetection();
+  
+  // Mobile gesture navigation
+  const { attachGestures } = useTouchGestures({
+    onSwipeRight: () => {
+      if (deviceInfo.isMobile && !isRecording && !isCountingDown) {
+        // Swipe right to go back (intuitive mobile gesture)
+        setLocation(`/patient/${currentUser?.code || '000000'}/dashboard`);
+      }
+    },
+    onSwipeLeft: () => {
+      if (deviceInfo.isMobile && !isRecording && !isCountingDown) {
+        // Could implement swipe left for retake or other actions
+        console.log('📱 Swipe left detected - could trigger retake');
+      }
+    }
+  });
+
   const [currentRepetition, setCurrentRepetition] = useState(1);
   const [isRecording, setIsRecording] = useState(false);
   
@@ -590,7 +610,10 @@ export default function Recording() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div 
+      className="max-w-7xl mx-auto"
+      ref={(el) => deviceInfo.isMobile && attachGestures(el)}
+    >
       <Card className="medical-card">
         <CardContent>
           <div className="mb-8">

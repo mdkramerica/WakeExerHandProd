@@ -116,12 +116,12 @@ export default function VideoInstruction() {
             </div>
           )}
 
-          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8">
-            <div>
+          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="lg:col-span-2">
               <div className="bg-gray-900 rounded-xl mb-4 lg:mb-6 relative overflow-hidden" style={{ 
                 aspectRatio: deviceInfo.isMobile ? 'auto' : '16/9',
-                minHeight: deviceInfo.isMobile ? '300px' : '400px',
-                maxHeight: deviceInfo.isMobile ? '70vh' : '500px'
+                minHeight: deviceInfo.isMobile ? '300px' : '350px',
+                maxHeight: deviceInfo.isMobile ? '70vh' : '400px'
               }}>
                 <video 
                   controls
@@ -162,10 +162,10 @@ export default function VideoInstruction() {
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-blue-50 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <Info className="w-5 h-5 text-medical-blue mr-2" />
+            <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+              <div className="bg-blue-50 rounded-lg p-4 lg:p-6">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm lg:text-base">
+                  <Info className="w-4 h-4 lg:w-5 lg:h-5 text-medical-blue mr-2" />
                   Assessment Details
                 </h3>
                 <div className="space-y-3 text-sm">
@@ -184,26 +184,26 @@ export default function VideoInstruction() {
                 </div>
               </div>
 
-              <div className="bg-gray-100 border border-gray-200 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                  <AlertTriangle className="w-5 h-5 text-gray-800 mr-2" />
+              <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 lg:p-6">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm lg:text-base">
+                  <AlertTriangle className="w-4 h-4 lg:w-5 lg:h-5 text-gray-800 mr-2" />
                   Important Reminders
                 </h3>
-                <ul className="text-sm text-gray-700 space-y-2">
+                <ul className="text-xs lg:text-sm text-gray-700 space-y-2">
                   <li className="flex items-start">
-                    <CheckCircle className="w-4 h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
                     Ensure good lighting and clear camera view
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="w-4 h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
                     Keep your hand in frame throughout the movement
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="w-4 h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
                     Move slowly and smoothly as demonstrated
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="w-4 h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 text-gray-800 mr-2 mt-0.5 flex-shrink-0" />
                     Stop if you experience pain or discomfort
                   </li>
                 </ul>

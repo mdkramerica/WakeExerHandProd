@@ -177,7 +177,7 @@ export class RecoveryStorage {
       {
         name: 'Forearm Pronation/Supination',
         description: 'Assess forearm rotation capabilities',
-        videoUrl: '/videos/forearm-rotation.mp4',
+        videoUrl: '/videos/wrist-supination-pronation.mp4',
         duration: 10,
         repetitions: 1,
         instructions: 'Rotate your forearm to turn palm up and down while keeping elbow stable.',
@@ -187,7 +187,7 @@ export class RecoveryStorage {
       {
         name: 'Wrist Radial/Ulnar Deviation',
         description: 'Measure side-to-side wrist movement',
-        videoUrl: '/videos/wrist-deviation.mp4',
+        videoUrl: '/videos/wrist-radial-ulnar-deviation.mp4',
         duration: 10,
         repetitions: 1,
         instructions: 'Move your wrist side to side, first toward thumb then toward pinky.',

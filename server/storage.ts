@@ -2180,7 +2180,7 @@ async function initializeDatabase() {
         {
           name: "Forearm Pronation/Supination",
           description: "Measure forearm rotation with palm up and palm down movements",
-          videoUrl: "/videos/forearm-ps-assessment.mp4",
+          videoUrl: "/videos/wrist-supination-pronation.mp4",
           duration: 10,
           repetitions: 1,
           instructions: "Rotate your forearm to turn palm up, then palm down. Keep elbow at your side.",
@@ -2190,7 +2190,7 @@ async function initializeDatabase() {
         {
           name: "Wrist Radial/Ulnar Deviation",
           description: "Measure side-to-side wrist movement toward thumb and pinky",
-          videoUrl: "/videos/wrist-ru-assessment.mp4",
+          videoUrl: "/videos/wrist-radial-ulnar-deviation.mp4",
           duration: 10,
           repetitions: 1,
           instructions: "Move your wrist toward your thumb side, then toward your pinky side. Keep hand flat.",

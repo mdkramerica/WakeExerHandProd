@@ -2039,8 +2039,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Emergency admin setup endpoint (temporary)
-  app.post("/api/admin/setup-emergency-admin", async (req, res) => {
+  // Emergency admin setup endpoint (temporary) - outside of /api middleware
+  app.post("/emergency-admin-setup", async (req, res) => {
     try {
       // Check if admin already exists
       const existingAdmin = await storage.getAdminUserByUsername('admin');

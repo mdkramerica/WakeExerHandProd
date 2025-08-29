@@ -1189,13 +1189,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Find existing user assessments to determine session number
+      // Find the incomplete user assessment that was created when recording started
       const existingAssessments = await storage.getUserAssessments(userId);
-      const sessionCount = existingAssessments.filter(ua => ua.assessmentId === assessmentId).length;
-      const sessionNumber = sessionCount + 1;
+      const incompleteAssessment = existingAssessments.find(ua => 
+        ua.assessmentId === assessmentId && !ua.isCompleted
+      );
       
-      // Create new assessment (don't update existing ones - allow multiple sessions)
-      const userAssessment = await storage.createUserAssessment({
+      let userAssessment;
+      
+      if (incompleteAssessment) {
+        // Update the existing incomplete assessment
+        console.log('🔍 Updating existing user assessment:', {
+          userAssessmentId: incompleteAssessment.id,
+          userId,
+          assessmentId,
+          hasRomData: !!romData,
+          hasRepetitionData: !!repetitionData
+        });
+        
+        userAssessment = await storage.updateUserAssessment(incompleteAssessment.id, {
+          isCompleted: true,
+          completedAt: new Date(),
+          romData,
+          repetitionData,
+          qualityScore,
+          maxMcpAngle: maxMcpAngle !== null ? String(maxMcpAngle) : null,
+          maxPipAngle: maxPipAngle !== null ? String(maxPipAngle) : null,
+          maxDipAngle: maxDipAngle !== null ? String(maxDipAngle) : null,
+          totalActiveRom: totalActiveRom !== null ? String(totalActiveRom) : null,
+          kapandjiScore: kapandjiScore !== null ? String(kapandjiScore) : null,
+          indexFingerRom: indexFingerRom !== null ? String(indexFingerRom) : null,
+          middleFingerRom: middleFingerRom !== null ? String(middleFingerRom) : null,
+          ringFingerRom: ringFingerRom !== null ? String(ringFingerRom) : null,
+          pinkyFingerRom: pinkyFingerRom !== null ? String(pinkyFingerRom) : null,
+          
+          // Individual joint angles for detailed breakdown
+          middleFingerMcp: middleFingerMcp !== null ? String(middleFingerMcp) : null,
+          middleFingerPip: middleFingerPip !== null ? String(middleFingerPip) : null,
+          middleFingerDip: middleFingerDip !== null ? String(middleFingerDip) : null,
+          
+          ringFingerMcp: ringFingerMcp !== null ? String(ringFingerMcp) : null,
+          ringFingerPip: ringFingerPip !== null ? String(ringFingerPip) : null,
+          ringFingerDip: ringFingerDip !== null ? String(ringFingerDip) : null,
+          
+          pinkyFingerMcp: pinkyFingerMcp !== null ? String(pinkyFingerMcp) : null,
+          pinkyFingerPip: pinkyFingerPip !== null ? String(pinkyFingerPip) : null,
+          pinkyFingerDip: pinkyFingerDip !== null ? String(pinkyFingerDip) : null,
+          handType: handType || null,
+          
+          // Wrist angle data
+          wristFlexionAngle: wristFlexionAngle !== null ? String(wristFlexionAngle) : null,
+          wristExtensionAngle: wristExtensionAngle !== null ? String(wristExtensionAngle) : null,
+          maxWristFlexion: maxWristFlexion !== null ? String(maxWristFlexion) : null,
+          maxWristExtension: maxWristExtension !== null ? String(maxWristExtension) : null,
+          
+          // Wrist deviation data
+          maxRadialDeviation: req.body.maxRadialDeviation ? String(req.body.maxRadialDeviation) : null,
+          maxUlnarDeviation: req.body.maxUlnarDeviation ? String(req.body.maxUlnarDeviation) : null,
+          
+          // DASH assessment data
+          dashScore: dashScore !== null ? dashScore : null,
+          responses: responses ? JSON.stringify(responses) : null
+        });
+      } else {
+        // Fallback: Create new assessment if no incomplete one exists
+        const sessionCount = existingAssessments.filter(ua => ua.assessmentId === assessmentId).length;
+        const sessionNumber = sessionCount + 1;
+        
+        console.log('🔍 Creating new user assessment (no incomplete found):', {
+          userId,
+          assessmentId,
+          sessionNumber,
+          hasRomData: !!romData,
+          hasRepetitionData: !!repetitionData
+        });
+        
+        userAssessment = await storage.createUserAssessment({
         userId,
         assessmentId,
         sessionNumber,
@@ -1240,11 +1309,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // DASH assessment data
         dashScore: dashScore !== null ? dashScore : null,
-        responses: responses ? JSON.stringify(responses) : null
+          responses: responses ? JSON.stringify(responses) : null
+        });
+      }
+      
+      console.log('🔍 Final user assessment result:', {
+        userAssessmentId: userAssessment?.id,
+        userAssessment: !!userAssessment,
+        hasId: !!userAssessment?.id,
+        method: incompleteAssessment ? 'updated' : 'created'
       });
       
       res.json({ userAssessment });
     } catch (error) {
+      console.error('🔍 Error creating user assessment:', error);
       res.status(400).json({ message: "Failed to complete assessment" });
     }
   });

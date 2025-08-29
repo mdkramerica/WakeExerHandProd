@@ -482,10 +482,10 @@ export default function PatientDailyDashboard() {
               {/* Pending Assessments */}
               {todayAssessments.map((assessment) => (
                 <div key={assessment.id} className="relative group">
-                  <Card className="relative bg-white border-gray-600 border-3 shadow-2xl rounded-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-3xl">
-                    <CardContent className="pt-8 pb-8">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-4">
+                  <Card className="relative bg-white border-gray-600 border-3 shadow-2xl rounded-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-3xl lg:hover:scale-105 hover:lg:shadow-3xl">
+                    <CardContent className="pt-6 pb-6 lg:pt-8 lg:pb-8">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
+                        <div className="space-y-3 lg:space-y-4">
                           <div className="flex items-center space-x-4">
                             <div className="p-4 bg-gray-800 rounded-full shadow-lg border-2 border-gray-900">
                               <PlayCircle className="h-10 w-10 text-white" />
@@ -512,7 +512,7 @@ export default function PatientDailyDashboard() {
                           <Button 
                             size="lg" 
                             variant="default"
-                            className="px-10 py-6 text-xl font-black rounded-xl"
+                            className="w-full lg:w-auto px-6 lg:px-10 py-4 lg:py-6 text-lg lg:text-xl font-black rounded-xl min-h-[48px]"
                           >
                             <PlayCircle className="mr-3 h-6 w-6" />
                             Start Assessment

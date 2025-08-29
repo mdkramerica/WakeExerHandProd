@@ -114,9 +114,9 @@ export default function VideoInstruction() {
             </div>
           )}
 
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8">
             <div>
-              <div className="bg-gray-900 rounded-xl aspect-video mb-6 relative overflow-hidden min-h-[400px] lg:min-h-[500px]">
+              <div className="bg-gray-900 rounded-xl aspect-video mb-4 lg:mb-6 relative overflow-hidden min-h-[250px] sm:min-h-[400px] lg:min-h-[500px]">
                 <video 
                   controls
                   autoPlay
@@ -134,10 +134,10 @@ export default function VideoInstruction() {
               <div className="text-center space-y-3">
                 <Button
                   onClick={handleProceedToRecording}
-                  className="medical-button w-full"
+                  className="medical-button w-full h-12 lg:h-auto text-lg lg:text-base"
                 >
                   Ready to Record
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight className="w-5 h-5 lg:w-4 lg:h-4 ml-2" />
                 </Button>
                 {!videoWatched && (
                   <p className="text-xs text-gray-600 mt-2">

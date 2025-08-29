@@ -628,10 +628,10 @@ export default function Recording() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-8">
             {/* Camera View */}
-            <div className="lg:col-span-2">
-              <div className="bg-gray-900 rounded-xl aspect-video relative overflow-hidden mb-4">
+            <div className="order-1 lg:order-none lg:col-span-2">
+              <div className="bg-gray-900 rounded-xl aspect-[4/3] sm:aspect-video relative overflow-hidden mb-4">
                 <HolisticTracker
                   onUpdate={handleMediaPipeUpdate}
                   isRecording={isRecording}
@@ -712,7 +712,7 @@ export default function Recording() {
               </div>
               
               {/* Recording Controls */}
-              <div className="flex items-center justify-center space-x-4">
+              <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-4 lg:space-x-4">
                 {!isRecording && !isCountingDown ? (
                   <Button
                     onClick={() => {
@@ -720,7 +720,7 @@ export default function Recording() {
                       startRecording();
                     }}
                     disabled={!handDetected}
-                    className="bg-red-500 text-white px-8 py-4 rounded-lg flex items-center justify-center hover:bg-red-600 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-red-500 text-white px-8 py-4 min-h-[48px] lg:min-h-[auto] rounded-lg flex items-center justify-center hover:bg-red-600 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="w-4 h-4 bg-white rounded-full mr-3"></div>
                     <span className="text-lg font-semibold">RECORD</span>
@@ -754,7 +754,7 @@ export default function Recording() {
                 <Button
                   onClick={retakeRecording}
                   variant="outline"
-                  className="px-6 py-3 border-2 hover:bg-gray-50"
+                  className="px-6 py-3 min-h-[48px] lg:min-h-[auto] border-2 hover:bg-gray-50"
                   disabled={isRecording || isCountingDown}
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
@@ -766,7 +766,7 @@ export default function Recording() {
                   onClick={() => setShowSkeletonOverlay(!showSkeletonOverlay)}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 min-h-[44px] lg:min-h-[auto] px-4 lg:px-3"
                 >
                   {showSkeletonOverlay ? (
                     <EyeOff className="w-4 h-4" />
@@ -779,7 +779,7 @@ export default function Recording() {
             </div>
 
             {/* Side Panel */}
-            <div className="space-y-4">
+            <div className="order-2 lg:order-none space-y-2 lg:space-y-4">
               {/* Instructional Video Demo */}
               {assessment?.videoUrl && (
                 <div className="bg-white border border-gray-200 rounded-lg p-4">

@@ -197,19 +197,19 @@ export default function AssessmentList() {
           <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
 
             <Link href={`/patient/${userCode}/dashboard`}>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="min-h-[44px] lg:min-h-[auto] px-4 lg:px-3">
                 <Calendar className="h-4 w-4 mr-2" />
                 Dashboard
               </Button>
             </Link>
             <Link href={`/patient/${userCode}/progress`}>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="min-h-[44px] lg:min-h-[auto] px-4 lg:px-3">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Progress Charts
               </Button>
             </Link>
             <Link href={`/patient/${userCode}/history`}>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="min-h-[44px] lg:min-h-[auto] px-4 lg:px-3">
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Assessment History
               </Button>

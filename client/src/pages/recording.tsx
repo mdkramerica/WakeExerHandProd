@@ -121,12 +121,15 @@ export default function Recording() {
         description: "Your range of motion data has been recorded successfully.",
       });
       
-      // Navigate back to Today's assessments page for consistent user experience
-      if (userAssessmentId) {
-        setLocation(`/patient/${currentUser.code}`);
-      } else {
-        setLocation(`/assessment-list/${currentUser.code}`);
-      }
+      // Navigate to motion replay to show the recorded assessment
+      // Add a small delay to ensure the data is saved before navigating
+      setTimeout(() => {
+        if (userAssessmentId) {
+          setLocation(`/patient/${currentUser.code}/motion-replay/${userAssessmentId}`);
+        } else {
+          setLocation(`/patient/${currentUser.code}`);
+        }
+      }, 1000);
     },
     onError: () => {
       toast({

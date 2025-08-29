@@ -605,7 +605,7 @@ export default function Recording() {
                     queryClient.invalidateQueries({ queryKey: ['/api/users/2/assessments'] });
                     queryClient.invalidateQueries({ queryKey: ['/api/users/2/progress'] });
                     queryClient.invalidateQueries({ queryKey: ['/api/users/2/history'] });
-                    setLocation(`/assessment-list/${currentUser?.code || '000000'}`);
+                    setLocation(`/patient/${currentUser?.code || '000000'}/dashboard`);
                   }}
                   className="flex items-center space-x-2"
                 >

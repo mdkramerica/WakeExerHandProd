@@ -186,7 +186,7 @@ export default function WristResults() {
             <p className="text-sm mb-4">
               {calculationError?.message || 'This assessment needs to be completed before viewing results.'}
             </p>
-            <Link href={`/assessment-list/${userCode}`}>
+            <Link href={`/patient/${userCode}/dashboard`}>
               <Button variant="outline" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Assessments
@@ -222,7 +222,7 @@ export default function WristResults() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link href={`/assessment-list/${userCode}`}>
+            <Link href={`/patient/${userCode}/dashboard`}>
               <Button variant="outline" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Assessments
@@ -235,7 +235,7 @@ export default function WristResults() {
           </div>
           
           <div className="flex space-x-2">
-            <Link href="/progress-charts">
+            <Link href={`/patient/${userCode}/progress`}>
               <Button variant="outline" size="sm">
                 <TrendingUp className="w-4 h-4 mr-2" />
                 Progress Charts
@@ -648,7 +648,7 @@ export default function WristResults() {
 
         {/* Action Buttons */}
         <div className="flex justify-center space-x-4">
-          <Link href={`/assessment-list/${userCode}`}>
+          <Link href={`/patient/${userCode}/dashboard`}>
             <Button>
               Continue Assessments
             </Button>

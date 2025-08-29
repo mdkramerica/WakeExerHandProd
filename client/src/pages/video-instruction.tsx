@@ -61,7 +61,7 @@ export default function VideoInstruction() {
   };
 
   const handleBack = () => {
-    const backUrl = code ? `/assessment-list/${code}` : "/assessments";
+    const backUrl = code ? `/patient/${code}/dashboard` : "/patient";
     setLocation(backUrl);
   };
 

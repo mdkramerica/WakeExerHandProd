@@ -182,7 +182,13 @@ export default function DemoAccess() {
                         variant="outline" 
                         size="sm"
                         className="w-full"
-                        onClick={() => window.open(assessment.videoUrl, '_blank')}
+                        onClick={() => {
+                          // Ensure proper URL for video viewing
+                          const videoUrl = assessment.videoUrl.startsWith('/') 
+                            ? window.location.origin + assessment.videoUrl 
+                            : assessment.videoUrl;
+                          window.open(videoUrl, '_blank');
+                        }}
                       >
                         View Instructions
                       </Button>

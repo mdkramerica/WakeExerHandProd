@@ -118,7 +118,11 @@ export default function VideoInstruction() {
 
           <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8">
             <div>
-              <div className="bg-gray-900 rounded-xl aspect-video mb-4 lg:mb-6 relative overflow-hidden min-h-[250px] sm:min-h-[400px] lg:min-h-[500px]">
+              <div className="bg-gray-900 rounded-xl mb-4 lg:mb-6 relative overflow-hidden" style={{ 
+                aspectRatio: deviceInfo.isMobile ? 'auto' : '16/9',
+                minHeight: deviceInfo.isMobile ? '300px' : '400px',
+                maxHeight: deviceInfo.isMobile ? '70vh' : '500px'
+              }}>
                 <video 
                   controls
                   autoPlay={!deviceInfo.isMobile} // Respect mobile autoplay policies

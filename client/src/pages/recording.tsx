@@ -825,8 +825,13 @@ export default function Recording() {
                       muted
                       playsInline
                       preload="metadata"
-                      className="w-full h-48 object-cover rounded-lg bg-gray-900 border"
-                      style={{ aspectRatio: '4/3' }}
+                      className="w-full object-contain rounded-lg bg-gray-900 border"
+                      style={{ 
+                        aspectRatio: '4/3',
+                        minHeight: '180px',
+                        maxHeight: '240px',
+                        height: 'auto'
+                      }}
                       onError={(e) => {
                         console.error('Video load error:', e, 'URL:', assessment.videoUrl);
                         e.currentTarget.style.display = 'none';

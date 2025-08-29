@@ -108,6 +108,31 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
     }
   }));
 
+  // Debug endpoint to check patient data (temporary)
+  app.get("/debug-patients", async (req, res) => {
+    try {
+      const { DatabaseStorage } = await import("./storage.js");
+      const storage = new DatabaseStorage();
+      
+      const patients = await storage.getAdminPatients();
+      const allUsers = await storage.getAllUsers?.() || [];
+      
+      res.json({
+        debug: "Patient data check",
+        patientCount: patients.length,
+        patients: patients,
+        allUsersCount: allUsers.length,
+        sampleUsers: allUsers.slice(0, 3)
+      });
+    } catch (error) {
+      res.json({
+        debug: "Error checking patients",
+        error: error.message,
+        stack: error.stack
+      });
+    }
+  });
+
   (async () => {
     const server = await registerRoutes(app);
     

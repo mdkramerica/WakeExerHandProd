@@ -40,6 +40,14 @@ export default function Recording() {
   const [currentRepetition, setCurrentRepetition] = useState(1);
   const [isRecording, setIsRecording] = useState(false);
   
+  // Hand validation state for multi-hand detection prevention
+  const [handValidation, setHandValidation] = useState({
+    isValid: false,
+    multipleHandsDetected: false,
+    showWarning: false,
+    handCount: 0
+  });
+  
   const [recordingTimer, setRecordingTimer] = useState(0);
   const [countdownTimer, setCountdownTimer] = useState(0);
   const [isCountingDown, setIsCountingDown] = useState(false);
@@ -250,7 +258,40 @@ export default function Recording() {
     };
   }, [isRecording]);
 
+  // Hand validation handlers
+  const handleHandValidation = (isValid: boolean) => {
+    setHandValidation(prev => ({ ...prev, isValid }));
+  };
+
+  const handleMultiHandDetected = (detected: boolean, count: number) => {
+    setHandValidation(prev => ({ 
+      ...prev, 
+      multipleHandsDetected: detected,
+      showWarning: detected,
+      handCount: count
+    }));
+    
+    // Auto-hide warning after 3 seconds
+    if (detected) {
+      setTimeout(() => {
+        setHandValidation(prev => ({ ...prev, showWarning: false }));
+      }, 3000);
+    }
+  };
+
   const startRecording = () => {
+    // PRE-RECORDING VALIDATION: Ensure only one hand is visible
+    if (!handValidation.isValid) {
+      toast({
+        title: "Hand Detection Required",
+        description: handValidation.multipleHandsDetected 
+          ? "Please move the other hand out of view. Only one hand should be visible during assessment."
+          : "Please position one hand clearly in view of the camera before recording.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Lock the current detected hand type immediately when record button is pressed
     const currentDetectedHand = detectedHandType !== 'UNKNOWN' ? detectedHandType : 'LEFT';
     setSessionHandType(currentDetectedHand);
@@ -638,7 +679,7 @@ export default function Recording() {
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900 mb-2">Recording Assessment</h2>
                   <p className="text-gray-800">
-                    Position your hand in the camera view and perform the {assessment.name.toLowerCase()} movement.
+                    Position <strong>one hand only</strong> in the camera view and perform the {assessment.name.toLowerCase()} movement. Keep your other hand out of view to ensure accurate tracking.
                   </p>
                 </div>
               </div>
@@ -662,8 +703,18 @@ export default function Recording() {
                   sessionMaxWristAngles={sessionMaxWristAngles}
                   lockedHandType={sessionHandType}
                   showSkeletonOverlay={showSkeletonOverlay}
+                  onHandValidation={handleHandValidation}
+                  onMultiHandDetected={handleMultiHandDetected}
                 />
                 
+                {/* Subtle multi-hand warning */}
+                {handValidation.showWarning && !isRecording && (
+                  <div className="absolute top-4 right-4 bg-amber-500 bg-opacity-90 text-white text-sm rounded-lg px-3 py-2 flex items-center space-x-2 animate-pulse">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <span>Move other hand away</span>
+                  </div>
+                )}
+
                 {/* Recording indicator with countdown timer and frame tracking */}
                 {isRecording && (
                   <div className="absolute top-4 left-4 bg-black bg-opacity-90 rounded-lg px-4 py-3 space-y-2">
@@ -742,7 +793,7 @@ export default function Recording() {
                       console.log('🎯 BUTTON CLICKED: Calling startRecording...');
                       startRecording();
                     }}
-                    disabled={!handDetected}
+                    disabled={!handDetected || !handValidation.isValid}
                     className="bg-red-500 text-white px-8 py-4 min-h-[48px] lg:min-h-[auto] rounded-lg flex items-center justify-center hover:bg-red-600 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="w-4 h-4 bg-white rounded-full mr-3"></div>
@@ -858,17 +909,18 @@ export default function Recording() {
                 <p className="text-gray-700 text-sm leading-relaxed">{assessment.instructions}</p>
               </div>
 
-              {/* Hand Status - Simplified */}
+              {/* Hand Status with Validation */}
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold text-gray-900">Hand Tracking</h4>
-                  <div className={`w-3 h-3 rounded-full ${handDetected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${handValidation.isValid ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <div className="text-gray-600">Hand Detected</div>
-                    <div className={`font-bold ${detectedHandType ? 'text-green-600' : 'text-gray-500'}`}>
-                      {detectedHandType || 'None'}
+                    <div className="text-gray-600">Status</div>
+                    <div className={`font-bold ${handValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                      {handValidation.multipleHandsDetected ? `${handValidation.handCount} Hands` : 
+                       handValidation.isValid ? 'Ready' : 'Position Hand'}
                     </div>
                   </div>
                   <div>

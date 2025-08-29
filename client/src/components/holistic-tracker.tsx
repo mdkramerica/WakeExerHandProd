@@ -20,9 +20,11 @@ interface HolisticTrackerProps {
   sessionMaxWristAngles?: any;
   lockedHandType?: 'LEFT' | 'RIGHT' | 'UNKNOWN';
   showSkeletonOverlay?: boolean;
+  onMultiHandDetected?: (detected: boolean, count: number) => void;
+  onHandValidation?: (isValid: boolean) => void;
 }
 
-export default function HolisticTracker({ onUpdate, isRecording, assessmentType, sessionMaxWristAngles, lockedHandType, showSkeletonOverlay = true }: HolisticTrackerProps) {
+export default function HolisticTracker({ onUpdate, isRecording, assessmentType, sessionMaxWristAngles, lockedHandType, showSkeletonOverlay = true, onMultiHandDetected, onHandValidation }: HolisticTrackerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const skeletonCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,6 +44,17 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
   // Add temporal stability for hand type detection
   const lastHandTypeRef = useRef<'LEFT' | 'RIGHT' | 'UNKNOWN'>('UNKNOWN');
   const handTypeConfidenceRef = useRef(0);
+  
+  // Hand validation state for preventing multiple hands
+  const [handValidationStatus, setHandValidationStatus] = useState<{
+    isValid: boolean;
+    multipleHandsDetected: boolean;
+    handCount: number;
+  }>({
+    isValid: false,
+    multipleHandsDetected: false,
+    handCount: 0
+  });
 
   const isWristAssessment = assessmentType?.toLowerCase().includes('wrist');
   const isRadialUlnarDeviation = assessmentType?.toLowerCase().includes('radial') || assessmentType?.toLowerCase().includes('ulnar') || assessmentType?.toLowerCase().includes('deviation');
@@ -233,7 +246,7 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
         });
 
         handsInstance.setOptions({
-          maxNumHands: 2,               
+          maxNumHands: 1,               // ENFORCE SINGLE HAND: Prevents hand switching
           modelComplexity: 1,           
           minDetectionConfidence: 0.5,  
           minTrackingConfidence: 0.5,   
@@ -295,6 +308,12 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
     let poseLandmarks: any[] = [];
     let handDetected = false;
     let trackingQuality = "Poor";
+    
+    // COUNT TOTAL HANDS DETECTED (for multi-hand detection warning)
+    const totalHandsDetected = [
+      results.leftHandLandmarks,
+      results.rightHandLandmarks
+    ].filter(hand => hand && hand.length > 0).length;
 
     // Process pose landmarks (including elbow data)
     if (results.poseLandmarks) {
@@ -528,7 +547,30 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
         recordingResolution: `${frameWidth}x${frameHeight}`
       });
     }
-  }, [isWristAssessment, onUpdate]);
+    
+    // UPDATE HAND VALIDATION STATUS
+    const newValidationStatus = {
+      isValid: totalHandsDetected === 1, // Valid when exactly 1 hand detected
+      multipleHandsDetected: totalHandsDetected > 1,
+      handCount: totalHandsDetected
+    };
+    
+    // Only update if status changed to prevent unnecessary re-renders
+    if (newValidationStatus.isValid !== handValidationStatus.isValid ||
+        newValidationStatus.multipleHandsDetected !== handValidationStatus.multipleHandsDetected ||
+        newValidationStatus.handCount !== handValidationStatus.handCount) {
+      setHandValidationStatus(newValidationStatus);
+      
+      // Notify parent components
+      onHandValidation?.(newValidationStatus.isValid);
+      onMultiHandDetected?.(newValidationStatus.multipleHandsDetected, newValidationStatus.handCount);
+      
+      if (newValidationStatus.multipleHandsDetected) {
+        console.log(`⚠️ MULTI-HAND DETECTED: ${totalHandsDetected} hands in frame (ignoring additional hands)`);
+      }
+    }
+    
+  }, [isWristAssessment, onUpdate, handValidationStatus, onHandValidation, onMultiHandDetected]);
 
 
 

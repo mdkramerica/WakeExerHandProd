@@ -203,9 +203,9 @@ export default function WristResults() {
   const totalFrames = frameCount;
   
   const getQualityColor = (score: number) => {
-    if (score >= 85) return "bg-green-500";
-    if (score >= 70) return "bg-yellow-500";
-    return "bg-red-500";
+    if (score >= 90) return "bg-green-500"; // Excellent quality (90%+)
+    if (score >= 70) return "bg-yellow-500"; // Good quality (70-89%)
+    return "bg-red-500"; // Poor quality (<70%)
   };
   
   console.log('🎯 WRIST RESULTS PAGE - AUTHORITATIVE VALUES:', {

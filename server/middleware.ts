@@ -175,16 +175,7 @@ export function setupSecurityMiddleware(app: Express): void {
     const publicEndpoints = [
       '/health',
       '/auth/login',
-      '/admin/login',
-      '/admin/patients',
-      '/admin/compliance',
-      '/admin/generate-code',
-      '/admin/download',
-      '/admin/export',
-      '/admin/assessment-mappings',
-      '/admin/assessments',
-      '/admin/users',
-      '/admin/dash-progress',
+      '/admin/login', // Only login is public, other admin endpoints require auth
       '/users/by-code', // Patient access by code
       '/users/verify-code', // Patient code verification
       '/users/', // Allow all user endpoints for now
@@ -211,7 +202,19 @@ export function setupSecurityMiddleware(app: Express): void {
       const token = authHeader.substring(7);
       const decoded = TokenService.verifyToken(token, 'access');
       
-      // Validate session is still active
+      // Handle admin tokens differently - they don't use SessionManager
+      if (decoded.role === 'admin') {
+        // Admin tokens are validated directly without session checks
+        req.user = {
+          id: decoded.userId,
+          username: decoded.username,
+          role: decoded.role,
+          sessionId: decoded.sessionId
+        };
+        return next();
+      }
+      
+      // Clinical user tokens use session management
       if (!SessionManager.isSessionValid(decoded.sessionId)) {
         return res.status(401).json({ 
           error: 'Session expired',
@@ -238,6 +241,7 @@ export function setupSecurityMiddleware(app: Express): void {
 
       next();
     } catch (error) {
+      console.log('Token validation error:', error.message);
       AuditLogger.logSecurityEvent({
         event: 'invalid_token_attempt',
         severity: 'medium',

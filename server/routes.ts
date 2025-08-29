@@ -2017,42 +2017,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ===== ADMIN PORTAL ROUTES =====
   
-  // Admin authentication middleware (temporarily simplified for debugging)
+  // Admin authentication middleware - uses req.user set by session middleware
   const requireAdminAuth = async (req: any, res: any, next: any) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Authentication required' });
+    // Check if user was set by session middleware
+    if (req.user && req.user.role === 'admin') {
+      // User is already validated by session middleware as admin
+      return next();
     }
     
-    const token = authHeader.substring(7);
-    try {
-      // Try JWT validation first
-      const payload = TokenService.verifyToken(token, 'access');
-      
-      if (payload && payload.role === 'admin') {
-        // Get user from token payload
-        const user = await storage.getAdminUser(payload.userId);
-        if (user && user.isActive) {
-          req.user = user;
-          return next();
-        }
-      }
-    } catch (jwtError) {
-      console.log('JWT validation failed, trying admin user lookup:', jwtError.message);
-    }
-    
-    // Fallback: get admin user directly (temporary for debugging)
-    try {
-      const adminUser = await storage.getAdminUserByUsername('admin');
-      if (adminUser && adminUser.isActive) {
-        req.user = adminUser;
-        return next();
-      }
-    } catch (error) {
-      console.error('Admin auth fallback error:', error);
-    }
-    
-    return res.status(401).json({ message: 'Invalid token' });
+    console.log('Admin auth failed - user:', req.user);
+    return res.status(403).json({ 
+      message: 'Admin access required',
+      code: 'INSUFFICIENT_PERMISSIONS'
+    });
   };
 
   // AS-001: Admin Login (Secure)
@@ -2115,8 +2092,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AS-003: Patient Management - View All Patients (temporary: no auth for debugging)
-  app.get("/api/admin/patients", async (req, res) => {
+  // AS-003: Patient Management - View All Patients
+  app.get("/api/admin/patients", requireAdminAuth, async (req, res) => {
     try {
       const patients = await storage.getAdminPatients();
       res.json(patients);

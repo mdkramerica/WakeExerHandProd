@@ -62,9 +62,9 @@ export default function VideoInstruction() {
         try {
           // Try to play the video automatically
           await videoRef.current.play();
-          console.log('Video autoplay successful');
+          // Video autoplay successful - no console logging needed
         } catch (error) {
-          console.log('Autoplay blocked, video will require user interaction:', error);
+          // Autoplay blocked - this is expected behavior in many browsers
           // Autoplay was blocked, but that's okay - the video will be ready to play
           // when user clicks the play button or interacts with the page
         }
@@ -159,10 +159,15 @@ export default function VideoInstruction() {
                   onLoadedData={() => {
                     // Additional attempt to play when video data is loaded
                     if (videoRef.current) {
-                      videoRef.current.play().catch(e => 
-                        console.log('Autoplay attempt on loadeddata failed:', e)
-                      );
+                      videoRef.current.play().catch(() => {
+                        // Silently handle autoplay failures - this is expected in many browsers
+                        // Video will be available for manual play via controls
+                      });
                     }
+                  }}
+                  onError={(e) => {
+                    // Handle video loading errors gracefully
+                    console.warn('Video failed to load, using fallback message');
                   }}
                 >
                   <source src={assessment.videoUrl} type="video/mp4" />

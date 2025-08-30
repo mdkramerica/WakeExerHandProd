@@ -1784,7 +1784,11 @@ export default function AssessmentReplay({ assessmentName, userAssessmentId, rec
               width={800}
               height={500}
               className="w-full border-2 border-gray-300 rounded-lg bg-gray-900"
-              style={{ maxWidth: '100%', height: '500px' }}
+              style={{ 
+                maxWidth: '100%', 
+                height: 'auto',
+                aspectRatio: '8/5'
+              }}
               onMouseDown={handleCanvasMouseDown}
               onMouseMove={handleCanvasMouseMove}
               onMouseUp={handleCanvasMouseUp}

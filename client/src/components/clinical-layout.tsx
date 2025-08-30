@@ -22,8 +22,11 @@ import {
   Database,
   UserPlus,
   LayoutDashboard,
+  Menu,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface ClinicalLayoutProps {
   children: React.ReactNode;
@@ -49,6 +52,7 @@ const navigation = [
 export default function ClinicalLayout({ children }: ClinicalLayoutProps) {
   const [location] = useLocation();
   const { user, logout, hasRole } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!user) {
     return null;
@@ -59,15 +63,37 @@ export default function ClinicalLayout({ children }: ClinicalLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Mobile sidebar backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-        <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-700">
-          <Activity className="h-8 w-8 text-primary" />
-          <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
-            Clinical Dashboard
-          </span>
+      <div className={cn(
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out",
+        mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
+        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center">
+            <Activity className="h-8 w-8 text-primary" />
+            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+              Clinical Dashboard
+            </span>
+          </div>
+          {/* Mobile close button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </div>
-        
+
         <nav className="flex-1 space-y-1 px-4 py-4">
           {filteredNavigation.map((item) => {
             const isActive = location === item.href || location.startsWith(item.href + '/');
@@ -80,6 +106,7 @@ export default function ClinicalLayout({ children }: ClinicalLayoutProps) {
                       ? 'bg-primary text-primary-foreground'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   )}
+                  onClick={() => setMobileMenuOpen(false)} // Close mobile menu on navigation
                 >
                   <item.icon
                     className={cn(
@@ -96,21 +123,31 @@ export default function ClinicalLayout({ children }: ClinicalLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="pl-64">
+      <div className="lg:pl-64">
         {/* Top header */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex h-16 items-center justify-between px-6">
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {/* Mobile menu button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setMobileMenuOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                 {navigation.find(item => location.startsWith(item.href))?.name || 'Dashboard'}
               </h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="hidden sm:block text-sm text-gray-500 dark:text-gray-400">
                 <span className="capitalize">{user.role}</span>
               </div>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -138,7 +175,7 @@ export default function ClinicalLayout({ children }: ClinicalLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4 sm:p-6">
           {children}
         </main>
       </div>

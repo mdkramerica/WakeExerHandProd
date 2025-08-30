@@ -569,6 +569,150 @@ input:focus, textarea:focus, select:focus {
   text-shadow: inherit !important;
 }
 
+/* Patient Header Mobile Fixes */
+.patient-header {
+  position: relative;
+  z-index: 20;
+  min-height: 60px;
+}
+
+/* Ensure patient dashboard content doesn't overlap with header */
+.patient-content {
+  margin-top: 0;
+  padding-top: 1rem;
+}
+
+/* Mobile viewport fixes - prevent white blocks from interfering */
+@media (max-width: 768px) {
+  .patient-header {
+    position: relative !important;
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid #E5E7EB !important;
+    z-index: 10 !important;
+    min-height: 48px !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Patient content needs proper spacing after header */
+  .patient-content {
+    padding-top: 0.5rem !important;
+    margin-top: 0 !important;
+  }
+  
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh; /* Use dynamic viewport height on mobile */
+  }
+  
+  /* Prevent any fixed positioning issues on mobile */
+  body {
+    overflow-x: hidden !important;
+  }
+  
+  /* Motion replay canvas mobile fixes */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+  
+  /* Ensure motion replay containers don't overflow */
+  .motion-replay-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+  
+  /* Card content padding adjustment for mobile */
+  .card-content {
+    padding: 0.75rem !important;
+  }
+  
+  /* Recording page mobile fixes */
+  .medical-card {
+    margin: 0.5rem !important;
+    padding: 0.75rem !important;
+  }
+  
+  /* Ensure no white bars block content */
+  .min-h-screen {
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Header component mobile adjustments - fix legacy header */
+  header {
+    position: relative !important;
+    z-index: 20;
+    min-height: 40px !important;
+    padding: 4px 8px !important;
+    margin: 0 !important;
+  }
+  
+  /* Main content after header needs proper spacing */
+  main.max-w-4xl.mx-auto.px-4.sm\\:px-6.lg\\:px-8.py-8 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 1rem !important;
+    margin-top: 0 !important;
+  }
+  
+  /* For video instruction and similar pages */
+  .max-w-6xl.mx-auto {
+    margin-top: 0 !important;
+    padding-top: 0.5rem !important;
+  }
+  
+  /* Legacy routing container fixes */
+  .min-h-screen.bg-white {
+    background: #F9FAFB !important;
+  }
+  
+  /* Fix mobile title sizing */
+  h1 {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+  
+  /* Remove excessive spacing on mobile */
+  .text-center.space-y-4 {
+    padding-top: 0.5rem !important;
+  }
+  
+  /* Fix main containers on mobile */
+  .max-w-4xl.mx-auto.space-y-6.p-4 {
+    padding: 1rem !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Fix overview page container */
+  .container.mx-auto.py-8 {
+    padding: 1rem !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Fix tabs and content spacing */
+  .space-y-6 {
+    gap: 1rem !important;
+  }
+  
+  /* Medical card mobile fixes */
+  .medical-card {
+    margin: 0.25rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Progress bar and content spacing */
+  .mb-8 {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Remove all excessive padding/margins on mobile */
+  .py-8 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+}
+
 /* Override any remaining problematic styles */
 .text-white {
   color: rgb(255 255 255) !important;

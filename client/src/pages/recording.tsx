@@ -657,10 +657,13 @@ export default function Recording() {
     >
       <Card className="medical-card">
         <CardContent>
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <ProgressBar currentStep={3} totalSteps={3} />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            
+            {/* Mobile-responsive header layout */}
+            <div className="space-y-4">
+              {/* Back button and repetition counter - mobile layout */}
+              <div className="flex items-center justify-between">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -671,23 +674,28 @@ export default function Recording() {
                     queryClient.invalidateQueries({ queryKey: ['/api/users/2/history'] });
                     setLocation(`/patient/${currentUser?.code || '000000'}/dashboard`);
                   }}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 min-h-[40px]"
+                  size="sm"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Assessments</span>
+                  <span className="hidden sm:inline">Back to Assessments</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">Recording Assessment</h2>
-                  <p className="text-gray-800">
-                    Position <strong>one hand only</strong> in the camera view and perform the {assessment.name.toLowerCase()} movement. Keep your other hand out of view to ensure accurate tracking.
-                  </p>
+                
+                <div className="text-right">
+                  <div className="text-xs sm:text-sm text-gray-800">Repetition</div>
+                  <div className="text-lg sm:text-2xl font-semibold text-blue-600">
+                    {currentRepetition}/{assessment.repetitions}
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-gray-800">Repetition</div>
-                <div className="text-2xl font-semibold text-blue-600">
-                  {currentRepetition}/{assessment.repetitions}
-                </div>
+              
+              {/* Title and description - separate row */}
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">Recording Assessment</h2>
+                <p className="text-sm sm:text-base text-gray-800">
+                  Position <strong>one hand only</strong> in the camera view and perform the {assessment.name.toLowerCase()} movement. Keep your other hand out of view to ensure accurate tracking.
+                </p>
               </div>
             </div>
           </div>

@@ -326,36 +326,41 @@ function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData =
             {assessmentName} Motion Review
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="card-content">
           {totalFrames > 0 ? (
             <div className="space-y-4">
-              {/* Canvas for motion display */}
-              <div className="flex justify-center">
+              {/* Canvas for motion display - Mobile Responsive */}
+              <div className="motion-replay-container flex justify-center w-full px-2 sm:px-0">
                 <canvas
                   ref={canvasRef}
                   width={500}
                   height={400}
-                  className="border-2 border-gray-300 rounded-xl shadow-lg"
-                  style={{ background: 'white' }}
+                  className="border-2 border-gray-300 rounded-xl shadow-lg w-full max-w-full"
+                  style={{ 
+                    background: 'white',
+                    maxWidth: '100%',
+                    height: 'auto',
+                    aspectRatio: '5/4'
+                  }}
                 />
               </div>
 
-              {/* ExerAI branded playback controls */}
-              <div className="flex items-center justify-center gap-4">
+              {/* ExerAI branded playback controls - Mobile Responsive */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0">
                 <Button
                   onClick={togglePlayback}
                   variant={isPlaying ? "secondary" : "default"}
                   size="lg"
-                  className="px-8 bg-blue-600 hover:bg-blue-700 text-white border-0 font-semibold text-lg"
+                  className="w-full sm:w-auto px-6 sm:px-8 bg-blue-600 hover:bg-blue-700 text-white border-0 font-semibold text-base sm:text-lg min-h-[48px]"
                 >
                   {isPlaying ? (
                     <>
-                      <Pause className="w-5 h-5 mr-2" />
+                      <Pause className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Pause
                     </>
                   ) : (
                     <>
-                      <Play className="w-5 h-5 mr-2" />
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Play
                     </>
                   )}
@@ -365,9 +370,9 @@ function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData =
                   onClick={resetPlayback} 
                   variant="outline" 
                   size="lg"
-                  className="border-gray-600 text-black hover:bg-gray-100 font-semibold"
+                  className="w-full sm:w-auto border-gray-600 text-black hover:bg-gray-100 font-semibold min-h-[48px] px-6"
                 >
-                  <RotateCcw className="w-5 h-5 mr-2" />
+                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Reset
                 </Button>
               </div>
@@ -509,8 +514,8 @@ export default function PatientMotionReplayPage() {
         patientAlias={user?.alias}
       />
       
-      <div className="p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="p-2 sm:p-4">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-black dark:text-white">Motion Review</h1>

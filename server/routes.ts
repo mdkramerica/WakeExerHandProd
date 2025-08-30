@@ -1488,7 +1488,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
+      // Use basic getUserAssessments instead of getUserAssessmentsForHistory to avoid column issues
+      const userAssessments = await storage.getUserAssessments(user.id);
       const assessments = await storage.getAssessments();
       
       // Debug: Check if DASH assessment exists
@@ -1523,10 +1524,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxWristExtension: ua.maxWristExtension,
           wristFlexionAngle: ua.wristFlexionAngle,
           wristExtensionAngle: ua.wristExtensionAngle,
-          forearmPronationAngle: ua.forearmPronationAngle,
-          forearmSupinationAngle: ua.forearmSupinationAngle,
-          wristRadialDeviationAngle: ua.wristRadialDeviationAngle,
-          wristUlnarDeviationAngle: ua.wristUlnarDeviationAngle,
           handType: ua.handType,
           sessionNumber: ua.sessionNumber,
           // Include DASH score data - ensure it's always included for DASH assessments

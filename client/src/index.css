@@ -377,6 +377,203 @@ div[class*="CardContent"] {
   background-color: #FFFFFF !important;
 }
 
+/* AGGRESSIVE MOBILE & TABLET WHITE BLOCK REMOVAL - Bottom Right Corner */
+@media (max-width: 1024px) {
+  /* Target any white blocks in bottom right corner */
+  div[style*="position: fixed"][style*="bottom"][style*="right"][style*="background: white"],
+  div[style*="position: fixed"][style*="bottom"][style*="right"][style*="background-color: white"],
+  div[style*="position: fixed"][style*="bottom"][style*="right"][style*="background: #fff"],
+  div[style*="position: fixed"][style*="bottom"][style*="right"][style*="background-color: #fff"],
+  div[style*="position: fixed"][style*="bottom"][style*="right"][style*="background: rgb(255, 255, 255)"],
+  div[style*="position: fixed"][style*="bottom"][style*="right"][style*="background-color: rgb(255, 255, 255)"],
+  /* Target fixed elements in bottom right with white background */
+  *[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"],
+  *[style*="position: fixed"][style*="bottom:0"][style*="right:0"],
+  *[style*="position: fixed"][style*="bottom: 20px"][style*="right: 20px"],
+  *[style*="position: fixed"][style*="bottom:20px"][style*="right:20px"],
+  /* Target any elements that might be floating widgets */
+  iframe[style*="position: fixed"][style*="bottom"],
+  div[style*="position: absolute"][style*="bottom"][style*="right"][style*="z-index"],
+  /* Target development overlays */
+  div[data-widget],
+  div[data-cartographer],
+  div[id*="widget"],
+  div[class*="widget"],
+  /* Target elements with specific positioning patterns */
+  *[style*="position: fixed"][style*="width: 64px"],
+  *[style*="position: fixed"][style*="height: 64px"],
+  *[style*="position: fixed"][style*="width: 48px"],
+  *[style*="position: fixed"][style*="height: 48px"],
+  /* Target any white floating blocks */
+  div[style*="background: white"][style*="position: fixed"],
+  div[style*="background-color: white"][style*="position: fixed"],
+  div[style*="background: #ffffff"][style*="position: fixed"],
+  div[style*="background-color: #ffffff"][style*="position: fixed"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure mobile content doesn't have unexpected overlays */
+  body, #root, main {
+    position: relative !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force remove any bottom-right positioned elements */
+  *[style*="bottom: 0px; right: 0px"],
+  *[style*="bottom:0px;right:0px"],
+  *[style*="bottom: 20px; right: 20px"],
+  *[style*="bottom:20px;right:20px"] {
+    display: none !important;
+  }
+}
+
+/* MOBILE ASSESSMENT CARD FIXES */
+@media (max-width: 768px) {
+  /* Assessment card container fixes */
+  .patient-content .relative.group {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Assessment card content fixes */
+  .patient-content .relative.group .Card {
+    overflow: visible !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  .patient-content .relative.group .Card:hover {
+    transform: none !important;
+    scale: 1 !important;
+  }
+  
+  /* Card content spacing */
+  .patient-content .CardContent {
+    padding: 1rem !important;
+  }
+  
+  /* Main content area - mobile responsive */
+  .patient-content .flex.flex-col.lg\:flex-row {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: stretch !important;
+  }
+  
+  /* Assessment header section - mobile */
+  .patient-content .flex.items-center.space-x-4 {
+    flex-direction: column !important;
+    space-x: 0 !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  
+  /* Icon container - smaller on mobile */
+  .patient-content .p-4.bg-gray-800.rounded-full {
+    padding: 0.75rem !important;
+    order: -1;
+  }
+  
+  /* Assessment title - smaller on mobile */
+  .patient-content .font-black.text-3xl {
+    font-size: 1.5rem !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+    margin: 0 !important;
+  }
+  
+  /* Badge container - mobile responsive */
+  .patient-content .flex.items-center.space-x-3.mt-2 {
+    justify-content: center !important;
+    margin-top: 0.5rem !important;
+  }
+  
+  /* Description text - mobile responsive */
+  .patient-content .text-lg.text-gray-900.ml-16 {
+    font-size: 1rem !important;
+    margin-left: 0 !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Estimated time - mobile responsive */
+  .patient-content .text-base.text-gray-800.ml-16 {
+    font-size: 0.875rem !important;
+    margin-left: 0 !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  
+  /* Button container - mobile responsive */
+  .patient-content .Button {
+    width: 100% !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
+    min-height: 48px !important;
+  }
+}
+
+/* ADDITIONAL AGGRESSIVE FIXES FOR ALL SCREEN SIZES INCLUDING IPAD PRO */
+/* Target any fixed positioned elements in bottom-right regardless of device */
+div[style*="position: fixed"][style*="bottom"],
+iframe[style*="position: fixed"][style*="bottom"],
+div[style*="position: absolute"][style*="bottom"][style*="right"],
+/* Any development widgets on all devices */
+div[data-widget],
+div[id*="widget"],
+div[class*="widget"],
+div[id*="cartographer"],
+div[class*="cartographer"],
+/* Bottom-right positioned elements - universal */
+*[style*="bottom: 0"][style*="right: 0"],
+*[style*="bottom:0"][style*="right:0"],
+*[style*="bottom: 20px"][style*="right: 20px"],
+*[style*="bottom:20px"][style*="right:20px"],
+/* Target white background fixed elements universally */
+div[style*="background: white"][style*="position: fixed"],
+div[style*="background-color: white"][style*="position: fixed"],
+div[style*="background: #ffffff"][style*="position: fixed"],
+div[style*="background-color: #ffffff"][style*="position: fixed"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+/* iPad Pro specific patterns */
+@media screen and (min-width: 1024px) and (max-width: 1366px) {
+  body > div:last-child[style*="position: fixed"],
+  body > *:last-child[style*="position: fixed"][style*="bottom"],
+  html > body > div:last-child[style*="position: fixed"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
 /* CRITICAL FIX: Select Component Yellow Background Issue - Global fix for all Select components */
 [data-radix-select-trigger],
 [data-radix-select-content],

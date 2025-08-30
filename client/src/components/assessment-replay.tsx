@@ -55,7 +55,7 @@ export default function AssessmentReplay({ assessmentName, userAssessmentId, rec
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState(isWristAssessment ? 0.5 : 1);
   const animationRef = useRef<number | null>(null);
   const [framesRendered, setFramesRendered] = useState(new Set<number>());
   const [playbackCompleted, setPlaybackCompleted] = useState(false);
@@ -1898,6 +1898,7 @@ export default function AssessmentReplay({ assessmentName, userAssessmentId, rec
                       onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
                       className="border-2 border-gray-300 rounded-md px-3 py-2 bg-white font-medium text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
+                      <option value={0.25}>0.25x</option>
                       <option value={0.5}>0.5x</option>
                       <option value={1}>1x</option>
                       <option value={1.5}>1.5x</option>

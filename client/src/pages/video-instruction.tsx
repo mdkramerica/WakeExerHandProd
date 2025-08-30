@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ export default function VideoInstruction() {
   const [videoWatched, setVideoWatched] = useState(false);
   const [, setLocation] = useLocation();
   const deviceInfo = useDeviceDetection();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const savedUser = sessionStorage.getItem('currentUser');
@@ -53,6 +54,27 @@ export default function VideoInstruction() {
     // In a real implementation, this would control actual video playback
     setVideoWatched(true);
   };
+
+  // Auto-start video with fallback for autoplay restrictions
+  useEffect(() => {
+    const attemptAutoplay = async () => {
+      if (videoRef.current && assessmentData?.assessment) {
+        try {
+          // Try to play the video automatically
+          await videoRef.current.play();
+          console.log('Video autoplay successful');
+        } catch (error) {
+          console.log('Autoplay blocked, video will require user interaction:', error);
+          // Autoplay was blocked, but that's okay - the video will be ready to play
+          // when user clicks the play button or interacts with the page
+        }
+      }
+    };
+
+    // Small delay to ensure video element is fully loaded
+    const timer = setTimeout(attemptAutoplay, 500);
+    return () => clearTimeout(timer);
+  }, [assessmentData?.assessment]);
 
   const handleProceedToRecording = () => {
     console.log('🎬 VIDEO INSTRUCTION: Navigating to recording page (NO auto-start)');
@@ -124,16 +146,24 @@ export default function VideoInstruction() {
                 maxHeight: deviceInfo.isMobile ? '70vh' : '400px'
               }}>
                 <video 
+                  ref={videoRef}
                   controls
-                  autoPlay={!deviceInfo.isMobile} // Respect mobile autoplay policies
+                  autoPlay // Always attempt autoplay on all devices
                   loop
-                  muted
+                  muted // Required for autoplay to work in most browsers
                   playsInline // Critical for iOS Safari
                   {...(deviceInfo.isIOS && { 'webkit-playsinline': 'true' })} // Legacy iOS support
                   className="w-full h-full object-contain"
                   onPlay={handleVideoPlay}
-                  preload={deviceInfo.isMobile ? "none" : "metadata"} // Save bandwidth on mobile
-                  poster={deviceInfo.isMobile ? undefined : undefined} // Could add poster for mobile
+                  preload="metadata" // Load video metadata to prepare for autoplay
+                  onLoadedData={() => {
+                    // Additional attempt to play when video data is loaded
+                    if (videoRef.current) {
+                      videoRef.current.play().catch(e => 
+                        console.log('Autoplay attempt on loadeddata failed:', e)
+                      );
+                    }
+                  }}
                 >
                   <source src={assessment.videoUrl} type="video/mp4" />
                   Your browser does not support the video tag.

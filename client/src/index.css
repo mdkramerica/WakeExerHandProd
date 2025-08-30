@@ -749,6 +749,34 @@ input:focus, textarea:focus, select:focus {
   overflow: hidden !important;
 }
 
+/* ASSESSMENT INSTRUCTION LAYOUT FIXES */
+/* Fix overlap issues with assessment instruction pages */
+.medical-card {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Ensure assessment instruction content flows vertically */
+.medical-card .flex.flex-col {
+  gap: 1.5rem !important;
+}
+
+/* Better spacing for assessment details sections */
+.medical-card .space-y-4,
+.medical-card .space-y-6 {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+}
+
+@media (min-width: 1024px) {
+  .medical-card .space-y-6 {
+    gap: 1.5rem !important;
+  }
+}
+
 .progress-indicator {
   background-color: rgb(34 197 94) !important; /* green-500 */
   transition: width 0.3s ease !important;

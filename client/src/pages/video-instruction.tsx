@@ -91,7 +91,7 @@ export default function VideoInstruction() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         <Card className="medical-card">
           <CardContent>
             <div className="text-center py-8">Loading assessment...</div>
@@ -105,7 +105,7 @@ export default function VideoInstruction() {
 
   if (!assessment) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         <Card className="medical-card">
           <CardContent>
             <div className="text-center py-8">Assessment not found</div>
@@ -116,7 +116,7 @@ export default function VideoInstruction() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full">
       <Card className="medical-card">
         <CardContent>
           <div className="mb-8">
@@ -138,8 +138,8 @@ export default function VideoInstruction() {
             </div>
           )}
 
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
-            <div className="lg:col-span-2">
+          <div className="flex flex-col gap-6">
+            <div className="w-full">
               <div className="bg-gray-900 rounded-xl mb-4 lg:mb-6 relative overflow-hidden" style={{ 
                 aspectRatio: deviceInfo.isMobile ? 'auto' : '16/9',
                 minHeight: deviceInfo.isMobile ? '300px' : '350px',
@@ -197,7 +197,8 @@ export default function VideoInstruction() {
               </div>
             </div>
 
-            <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+            {/* Assessment Details and Reminders - Now in separate section */}
+            <div className="w-full space-y-4 lg:space-y-6">
               <div className="bg-blue-50 rounded-lg p-4 lg:p-6">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm lg:text-base">
                   <Info className="w-4 h-4 lg:w-5 lg:h-5 text-medical-blue mr-2" />

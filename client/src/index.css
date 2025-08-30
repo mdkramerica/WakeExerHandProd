@@ -584,6 +584,30 @@ input:focus, textarea:focus, select:focus {
 
 /* Mobile viewport fixes - prevent white blocks from interfering */
 @media (max-width: 768px) {
+  /* iPhone specific fixes - safe area and viewport issues */
+  body {
+    padding-top: max(env(safe-area-inset-top, 0), 20px) !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Add top padding to avoid Dynamic Island */
+  #root {
+    padding-top: max(env(safe-area-inset-top, 0), 20px) !important;
+    margin: 0 !important;
+  }
+  
+  /* iPhone viewport height fix */
+  .min-h-screen {
+    min-height: 100vh !important;
+    min-height: 100dvh !important; /* Dynamic viewport height for iPhone */
+    padding-top: 0 !important;
+  }
+  
+  /* iPhone header safe area */
+  header {
+    padding-top: max(env(safe-area-inset-top, 0), 4px) !important;
+  }
   .patient-header {
     position: relative !important;
     background-color: #FFFFFF !important;
@@ -665,6 +689,21 @@ input:focus, textarea:focus, select:focus {
   /* Legacy routing container fixes */
   .min-h-screen.bg-white {
     background: #F9FAFB !important;
+    padding-top: max(env(safe-area-inset-top, 0), 25px) !important;
+  }
+  
+  /* General iPhone top padding fallback */
+  .container.mx-auto.py-8 {
+    padding-top: max(env(safe-area-inset-top, 0), 30px) !important;
+  }
+  
+  .max-w-6xl.mx-auto {
+    padding-top: max(env(safe-area-inset-top, 0), 30px) !important;
+  }
+  
+  /* Ensure all main content areas avoid the top */
+  main {
+    padding-top: max(env(safe-area-inset-top, 0), 25px) !important;
   }
   
   /* Fix mobile title sizing */
@@ -710,6 +749,90 @@ input:focus, textarea:focus, select:focus {
   .py-8 {
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
+  }
+  
+  /* iPhone 14 Pro Max specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific */
+    html {
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    body {
+      position: relative !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Ensure no white space at top */
+    #root {
+      margin: 0 !important;
+      padding: 0 !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+    }
+    
+    /* Legacy routing container fix for iPhone */
+    .min-h-screen.bg-white {
+      margin: 0 !important;
+      padding: 0 !important;
+      position: relative !important;
+    }
+  }
+}
+
+/* iPhone 14 Pro Max specific media query */
+@media only screen 
+  and (device-width: 430px) 
+  and (device-height: 932px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  
+  /* Specific fix for iPhone 14 Pro Max white bar */
+  body {
+    margin: 0 !important;
+    padding-top: 30px !important;
+    position: relative !important;
+  }
+  
+  #root {
+    margin: 0 !important;
+    padding-top: 30px !important;
+    position: relative !important;
+  }
+  
+  /* Push main content away from Dynamic Island */
+  .min-h-screen {
+    padding-top: 30px !important;
+  }
+  
+  /* Container padding for iPhone 14 Pro Max */
+  .container.mx-auto.py-8 {
+    padding-top: 40px !important;
+  }
+  
+  .max-w-6xl.mx-auto {
+    padding-top: 40px !important;
+  }
+  
+  header {
+    margin: 0 !important;
+    padding: 2px 8px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+  
+  .min-h-screen {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Eliminate any possible white space sources */
+  main {
+    margin: 0 !important;
+    padding: 0.25rem !important;
   }
 }
 

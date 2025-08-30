@@ -1,7 +1,8 @@
 import { Shield, LogOut } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import exerLogoPath from "@assets/ExerLogoColor_1750399504621.png";
+// Use public image path for LogoColor.png
+const exerLogoPath = "/images/LogoColor.png";
 
 export default function Header() {
   const [location, setLocation] = useLocation();
@@ -27,6 +28,13 @@ export default function Header() {
               src={exerLogoPath} 
               alt="Exer AI Logo" 
               className="h-4 sm:h-8 w-auto"
+              onError={(e) => {
+                console.error('Logo failed to load:', exerLogoPath);
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log('Logo loaded successfully:', exerLogoPath);
+              }}
             />
             <div>
               <h1 className="text-xs sm:text-xl font-semibold text-exer-navy">ROM Research Platform</h1>

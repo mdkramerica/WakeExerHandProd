@@ -749,6 +749,39 @@ input:focus, textarea:focus, select:focus {
   overflow: hidden !important;
 }
 
+/* REMOVE YELLOW OUTLINE ON MOBILE DEVICES */
+/* Fix yellow outline/border appearing on iPhone */
+* {
+  outline: none !important;
+  border: none !important;
+}
+
+/* Re-apply intentional borders but not yellow ones */
+.medical-card,
+.Card,
+[class*="border"],
+.border,
+.border-gray-200,
+.border-gray-300,
+.border-blue-200 {
+  border: 1px solid rgb(229 231 235) !important; /* gray-200 */
+}
+
+/* Ensure no yellow outlines on iOS */
+@supports (-webkit-touch-callout: none) {
+  * {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+  }
+  
+  #root,
+  body,
+  html {
+    border: none !important;
+    outline: none !important;
+  }
+}
+
 /* ASSESSMENT INSTRUCTION LAYOUT FIXES */
 /* Fix overlap issues with assessment instruction pages */
 .medical-card {

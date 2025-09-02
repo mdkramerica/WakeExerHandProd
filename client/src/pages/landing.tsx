@@ -113,7 +113,7 @@ export default function Landing() {
             <Button 
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={verifyCodeMutation.isPending || (code.length !== 6 && code !== 'DEMO01')}
+              disabled={verifyCodeMutation.isPending || !(code.length === 6 || code === 'DEMO01')}
             >
               {verifyCodeMutation.isPending ? (
                 "Verifying..."

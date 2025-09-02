@@ -1,0 +1,19 @@
+# Railway ignore file - exclude files from deployment
+node_modules/
+.git/
+.env*
+*.log
+.DS_Store
+*.md
+docs/
+tests/
+.github/
+attached_assets/
+backup.dump
+*.tar.gz
+*.sql
+complete_project_backup.tar.gz
+critical_files_backup.tar.gz
+source_code_backup.tar.gz
+database_backup.sql
+data_only_backup.sql

@@ -1,10 +1,9 @@
 [phases.setup]
-nixPkgs = ["nodejs_18", "npm"]
+nixPkgs = ["nodejs_18", "nodePackages.npm"]
 
 [phases.build]
 cmds = [
-  "npm ci --include=dev",
-  "npm run build"
+  "npm run railway:build"
 ]
 
 [phases.start]

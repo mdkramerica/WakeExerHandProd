@@ -11,39 +11,9 @@ import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Check if we should run the compliance portal instead
-if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
-  // In production/bundled environment, disable compliance portal switching
-  if (process.env.NODE_ENV === 'production') {
-    console.log("Compliance portal switching disabled in production environment. Running main application.");
-  } else {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const portalPath = path.join(__dirname, "../hand-assessment-compliance-portal");
-    
-    console.log("Switching to Hand Assessment Compliance Portal...");
-    process.chdir(portalPath);
-    
-    const child = spawn("tsx", ["server/index.ts"], {
-      stdio: "inherit",
-      shell: true,
-      env: { ...process.env, NODE_ENV: "development" }
-    });
-    
-    child.on("error", (error) => {
-      console.error("Error starting compliance portal:", error.message);
-      process.exit(1);
-    });
-    
-    child.on("close", (code) => {
-      process.exit(code || 0);
-    });
-    return; // Exit early to prevent running main app
-  }
-}
-
-// Run the main application (either when RUN_COMPLIANCE_PORTAL is false or in production)
-const app = express();
+// Main application function
+function runMainApplication() {
+  const app = express();
   
   // Validate required environment variables for production
   if (process.env.NODE_ENV === 'production') {
@@ -341,3 +311,32 @@ const app = express();
       log(`📋 Health check: http://localhost:${port}/health`);
     });
   })();
+}
+
+// Check if we should run the compliance portal instead
+if (process.env.RUN_COMPLIANCE_PORTAL === "true" && process.env.NODE_ENV !== 'production') {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const portalPath = path.join(__dirname, "../hand-assessment-compliance-portal");
+  
+  console.log("Switching to Hand Assessment Compliance Portal...");
+  process.chdir(portalPath);
+  
+  const child = spawn("tsx", ["server/index.ts"], {
+    stdio: "inherit",
+    shell: true,
+    env: { ...process.env, NODE_ENV: "development" }
+  });
+  
+  child.on("error", (error) => {
+    console.error("Error starting compliance portal:", error.message);
+    process.exit(1);
+  });
+  
+  child.on("close", (code) => {
+    process.exit(code || 0);
+  });
+} else {
+  // Run the main application
+  runMainApplication();
+}

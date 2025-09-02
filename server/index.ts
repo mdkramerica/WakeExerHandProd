@@ -89,10 +89,71 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
     }
   }));
 
-  // Serve videos from appropriate location based on environment
-  const videosPath = (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging')
-    ? path.join(path.dirname(fileURLToPath(import.meta.url)), 'public/videos')
-    : path.join(path.dirname(fileURLToPath(import.meta.url)), '../client/public/videos');
+  // DEBUG: Add video debug endpoint to see what's happening
+  app.get('/debug/videos', (req, res) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const fs = require('fs');
+    
+    const possiblePaths = [
+      path.join(__dirname, 'public/videos'),
+      path.join(__dirname, '../public/videos'),
+      path.join(__dirname, '../../public/videos'),
+      path.join(__dirname, 'videos'),
+      path.join(__dirname, '../videos'),
+      path.join(__dirname, '../../client/public/videos')
+    ];
+    
+    const debugInfo = {
+      nodeEnv: process.env.NODE_ENV,
+      __filename,
+      __dirname,
+      possiblePaths: possiblePaths.map(p => ({
+        path: p,
+        exists: fs.existsSync(p),
+        files: fs.existsSync(p) ? fs.readdirSync(p).filter(f => f.endsWith('.mp4')) : []
+      }))
+    };
+    
+    res.json(debugInfo);
+  });
+
+  // BULLETPROOF video serving - try all possible paths
+  let videosPath;
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const fs = require('fs');
+  
+  const possibleVideoPaths = [
+    path.join(__dirname, 'public/videos'),
+    path.join(__dirname, '../public/videos'), 
+    path.join(__dirname, '../../public/videos'),
+    path.join(__dirname, 'videos'),
+    path.join(__dirname, '../videos'),
+    path.join(__dirname, '../../client/public/videos')
+  ];
+  
+  // Find the first path that exists and has video files
+  for (const testPath of possibleVideoPaths) {
+    try {
+      if (fs.existsSync(testPath)) {
+        const files = fs.readdirSync(testPath);
+        if (files.some(f => f.endsWith('.mp4'))) {
+          videosPath = testPath;
+          console.log(`✅ Found videos at: ${videosPath}`);
+          console.log(`📁 Video files: ${files.filter(f => f.endsWith('.mp4')).join(', ')}`);
+          break;
+        }
+      }
+    } catch (e) {
+      console.log(`❌ Error checking ${testPath}:`, e.message);
+    }
+  }
+  
+  if (!videosPath) {
+    console.error('❌ No video directory found! Checked paths:', possibleVideoPaths);
+    videosPath = possibleVideoPaths[0]; // Fallback
+  }
   
   app.use('/videos', express.static(videosPath, {
     maxAge: '1h', // Cache for 1 hour
@@ -108,6 +169,10 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
         res.setHeader('Content-Type', 'video/mp4');
       } else if (filePath.endsWith('.webm')) {
         res.setHeader('Content-Type', 'video/webm');
+      } else if (filePath.endsWith('.avi')) {
+        res.setHeader('Content-Type', 'video/x-msvideo');
+      } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
       }
     }
   }));

@@ -30,6 +30,9 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Set NODE_ENV for runtime
+ENV NODE_ENV=production
+
 # Expose port
 EXPOSE 5000
 

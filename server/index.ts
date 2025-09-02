@@ -44,9 +44,17 @@ function runMainApplication() {
   }));
 
   // Serve attached assets statically with proper MIME types and security
-  const attachedAssetsPath = process.env.NODE_ENV === 'production'
-    ? path.join(process.cwd(), 'attached_assets')
-    : path.join(path.dirname(fileURLToPath(import.meta.url)), '../attached_assets');
+  let attachedAssetsPath: string;
+  if (process.env.NODE_ENV === 'production') {
+    attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
+  } else {
+    try {
+      attachedAssetsPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../attached_assets');
+    } catch (error) {
+      // Fallback for bundled environment
+      attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
+    }
+  }
   
   app.use('/attached_assets', express.static(attachedAssetsPath, {
     maxAge: '1h', // Cache for 1 hour
@@ -73,9 +81,16 @@ function runMainApplication() {
   // DEBUG: Add video debug endpoint to see what's happening
   app.get('/debug/videos', (req, res) => {
     // Handle path resolution for both development and production
-    const __filename = process.env.NODE_ENV === 'production' 
-      ? path.resolve(process.cwd(), 'dist', 'index.js')
-      : fileURLToPath(import.meta.url);
+    let __filename: string;
+    if (process.env.NODE_ENV === 'production') {
+      __filename = path.resolve(process.cwd(), 'dist', 'index.js');
+    } else {
+      try {
+        __filename = fileURLToPath(import.meta.url);
+      } catch (error) {
+        __filename = path.resolve(process.cwd(), 'dist', 'index.js');
+      }
+    }
     const __dirname = path.dirname(__filename);
     const fs = require('fs');
     
@@ -105,9 +120,16 @@ function runMainApplication() {
   // BULLETPROOF video serving - try all possible paths
   let videosPath;
   // Handle path resolution for both development and production
-  const __filename = process.env.NODE_ENV === 'production' 
-    ? path.resolve(process.cwd(), 'dist', 'index.js')
-    : fileURLToPath(import.meta.url);
+  let __filename: string;
+  if (process.env.NODE_ENV === 'production') {
+    __filename = path.resolve(process.cwd(), 'dist', 'index.js');
+  } else {
+    try {
+      __filename = fileURLToPath(import.meta.url);
+    } catch (error) {
+      __filename = path.resolve(process.cwd(), 'dist', 'index.js');
+    }
+  }
   const __dirname = path.dirname(__filename);
   const fs = require('fs');
   

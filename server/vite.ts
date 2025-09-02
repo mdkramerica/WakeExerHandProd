@@ -47,9 +47,16 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       // In production, this path won't be used since we use serveStatic instead
-      const clientTemplate = process.env.NODE_ENV === 'production' 
-        ? path.resolve(process.cwd(), "client", "index.html")
-        : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "client", "index.html");
+      let clientTemplate: string;
+      if (process.env.NODE_ENV === 'production') {
+        clientTemplate = path.resolve(process.cwd(), "client", "index.html");
+      } else {
+        try {
+          clientTemplate = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "client", "index.html");
+        } catch (error) {
+          clientTemplate = path.resolve(process.cwd(), "client", "index.html");
+        }
+      }
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
@@ -75,8 +82,13 @@ export function serveStatic(app: Express) {
     distPath = path.resolve(process.cwd(), "dist", "public");
   } else {
     // In development, use import.meta to resolve the path
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    distPath = path.resolve(__dirname, "public");
+    try {
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      distPath = path.resolve(__dirname, "public");
+    } catch (error) {
+      // Fallback for bundled environment
+      distPath = path.resolve(process.cwd(), "dist", "public");
+    }
   }
 
   if (!fs.existsSync(distPath)) {

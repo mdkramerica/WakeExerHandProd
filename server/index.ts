@@ -90,7 +90,7 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
   }));
 
   // Serve videos from appropriate location based on environment
-  const videosPath = process.env.NODE_ENV === 'production' 
+  const videosPath = (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging')
     ? path.join(path.dirname(fileURLToPath(import.meta.url)), '../public/videos')
     : path.join(path.dirname(fileURLToPath(import.meta.url)), '../client/public/videos');
   

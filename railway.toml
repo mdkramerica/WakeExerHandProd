@@ -2,9 +2,6 @@
 builder = "nixpacks"
 buildCommand = "npm run railway:build"
 
-[build.nixpacksConfig]
-nixPkgs = ["nodejs_18", "npm-9_x"]
-
 [deploy]
 numReplicas = 1
 sleepApplication = false

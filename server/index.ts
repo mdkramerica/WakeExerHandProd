@@ -341,4 +341,3 @@ const app = express();
       log(`📋 Health check: http://localhost:${port}/health`);
     });
   })();
-}

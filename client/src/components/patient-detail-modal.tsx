@@ -103,7 +103,7 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   // Delete assessment mutation
   const deleteAssessmentMutation = useMutation({
     mutationFn: async (assessmentId: number) => {
-      const response = await fetch(`/api/admin/assessments/${assessmentId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/assessments/${assessmentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`,
@@ -134,7 +134,7 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   // Download individual assessment
   const downloadAssessment = async (assessment: Assessment) => {
     try {
-      const response = await fetch(`/api/user-assessments/${assessment.id}/download`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user-assessments/${assessment.id}/download`);
       if (!response.ok) throw new Error('Download failed');
       
       const blob = await response.blob();
@@ -176,7 +176,7 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
     try {
       const token = sessionStorage.getItem('adminToken');
       console.log('Admin token for bulk download:', token);
-      const response = await fetch(`/api/admin/patients/${patient.code}/download-all`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/patients/${patient.code}/download-all`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

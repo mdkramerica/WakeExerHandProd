@@ -143,7 +143,7 @@ export default function PatientDailyDashboard() {
 
   const completeAssessmentMutation = useMutation({
     mutationFn: async (assessmentId: number) => {
-      return fetch(`/api/patients/${userCode}/complete-assessment`, {
+      return fetch(`${import.meta.env.VITE_API_URL}/api/patients/${userCode}/complete-assessment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assessmentId, completedAt: new Date().toISOString() }),

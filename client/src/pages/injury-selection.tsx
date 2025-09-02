@@ -35,7 +35,7 @@ export default function InjurySelection() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ injuryType }: { injuryType: string }) => {
-      const response = await fetch(`/api/users/${currentUser.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${currentUser.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

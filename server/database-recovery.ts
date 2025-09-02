@@ -147,7 +147,7 @@ export class RecoveryStorage {
       {
         name: 'TAM (Total Active Motion)',
         description: 'Comprehensive finger flexion and extension measurement',
-        videoUrl: '/videos/tam_video.mp4',
+        videoUrl: '/videos/ClawLFistLeft_1754062432000.mp4',
         duration: 10,
         repetitions: 1,
         instructions: 'Make a complete fist, then fully extend all fingers. Repeat slowly and deliberately.',
@@ -157,7 +157,7 @@ export class RecoveryStorage {
       {
         name: 'Kapandji Score',
         description: 'Thumb opposition assessment using standardized scoring',
-        videoUrl: '/videos/kapandji-instruction.mov',
+        videoUrl: '/videos/Kapandji Demo.mp4',
         duration: 10,
         repetitions: 1,
         instructions: 'Touch your thumb to each finger tip, then to the base of each finger, progressing down the hand.',

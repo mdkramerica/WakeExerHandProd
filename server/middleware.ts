@@ -40,10 +40,17 @@ export function setupSecurityMiddleware(app: Express): void {
       // Allow requests with no origin (mobile apps, etc.)
       if (!origin) return callback(null, true);
       
+      // In development, allow all localhost origins
+      if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
+        return callback(null, true);
+      }
+      
       // In production, use environment variable for allowed origins
       const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
         'http://localhost:3000',
         'http://localhost:5000',
+        'http://localhost:5173',
+        'http://localhost:5174',
         'https://your-app.railway.app' // Replace with actual Railway domain
       ];
       

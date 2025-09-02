@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { PersistentMemoryStorage } from "./persistent-storage";
 import { DatabaseStorage } from "./storage";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 import JSZip from 'jszip';
 import puppeteer from 'puppeteer';
@@ -56,6 +58,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   console.log('Storage system initialized:', useDatabase ? 'DatabaseStorage' : 'PersistentMemoryStorage');
   console.log('Environment check - USE_DATABASE:', process.env.USE_DATABASE, 'NODE_ENV:', process.env.NODE_ENV, 'DATABASE_URL exists:', !!process.env.DATABASE_URL);
+
+  // Debug endpoint for database testing (no auth required) - MUST be before auth middleware
+  app.get("/debug-db-test/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`🔍 Debug: Testing database query for assessment ID: ${id}`);
+      
+      const result = await db.execute(sql`
+        SELECT id, user_id, assessment_id, 
+               LENGTH(repetition_data::text) as data_size,
+               CASE WHEN repetition_data IS NOT NULL THEN 'HAS_DATA' ELSE 'NO_DATA' END as has_data
+        FROM user_assessments 
+        WHERE id = ${id}
+      `);
+      
+      console.log(`🔍 Debug: Query returned ${result.rows.length} rows`);
+      
+      res.json({ 
+        success: true,
+        found: result.rows.length > 0, 
+        data: result.rows[0] || null,
+        queryInfo: `SELECT from user_assessments WHERE id = ${id}`,
+        totalRows: result.rows.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error(`🔍 Debug: Database query error:`, error);
+      res.json({ 
+        success: false,
+        error: String(error), 
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // Debug endpoint to see actual column names
+  app.get("/debug-columns", async (req, res) => {
+    try {
+      console.log(`🔍 Debug: Getting column names for user_assessments table`);
+      
+      const result = await db.execute(sql`
+        SELECT column_name, data_type 
+        FROM information_schema.columns 
+        WHERE table_name = 'user_assessments' 
+        ORDER BY ordinal_position
+      `);
+      
+      console.log(`🔍 Debug: Found ${result.rows.length} columns`);
+      
+      res.json({ 
+        success: true,
+        columns: result.rows,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error(`🔍 Debug: Column query error:`, error);
+      res.json({ 
+        success: false,
+        error: String(error), 
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
   
   // Initialize authentication middleware with storage reference
   requireAuth = async (req: any, res: any, next: any) => {
@@ -818,7 +884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       // Get user assessments first, then lookup user by code if needed
-      const userAssessments = await storage.getUserAssessments(userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
       
       if (!userAssessments || userAssessments.length === 0) {
         return res.json({ history: [] });
@@ -879,7 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      const userAssessments = await storage.getUserAssessments(userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
       
       // Get assessments based on user's injury type
       const allAssessments = user.injuryType 
@@ -1330,7 +1396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/:userId/progress", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
-      const userAssessments = await storage.getUserAssessments(userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
       const allAssessments = await storage.getAssessments();
       
       const completed = userAssessments.filter(ua => ua.isCompleted).length;
@@ -1349,7 +1415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/:userId/history", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
-      const userAssessments = await storage.getUserAssessments(userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
       
       // Get all assessments to join with user assessments
       const allAssessments = await storage.getAssessments();
@@ -1397,47 +1463,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint to debug database query (no auth required)
+  app.get("/api/debug-db/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await db.execute(sql`
+        SELECT id, user_id, assessment_id, 
+               CASE WHEN repetition_data IS NOT NULL THEN 'HAS_DATA' ELSE 'NO_DATA' END as has_data
+        FROM user_assessments 
+        WHERE id = ${id}
+      `);
+      res.json({ 
+        found: result.rows.length > 0, 
+        data: result.rows[0] || null,
+        queryInfo: `SELECT from user_assessments WHERE id = ${id}`,
+        totalRows: result.rows.length
+      });
+    } catch (error) {
+      res.json({ error: String(error), stack: error.stack });
+    }
+  });
+
   app.get("/api/user-assessments/:userAssessmentId/motion-data", async (req, res) => {
     try {
       const userAssessmentId = parseInt(req.params.userAssessmentId);
       console.log(`🔍 Fetching motion data for assessment ID: ${userAssessmentId}`);
       
-      // Try to find the user assessment by iterating through all users
-      let userAssessment = null;
-      for (let userId = 1; userId <= 100; userId++) { // Increased search range
-        try {
-          const userAssessments = await storage.getUserAssessments(userId);
-          const found = userAssessments.find(ua => ua.id === userAssessmentId);
-          if (found) {
-            userAssessment = found;
-            console.log(`✅ Found assessment for user ${userId}`);
-            break;
-          }
-        } catch (e) {
-          // Continue searching
-        }
+      // First, test if the assessment exists at all
+      console.log(`🔍 Step 1: Testing if assessment exists...`);
+      const existsResult = await db.execute(sql`
+        SELECT id, user_id, assessment_id
+        FROM user_assessments 
+        WHERE id = ${userAssessmentId}
+      `);
+      
+      console.log(`🔍 Step 1 Result: Found ${existsResult.rows.length} rows`);
+      if (existsResult.rows.length > 0) {
+        console.log(`🔍 Assessment details:`, existsResult.rows[0]);
       }
       
-      if (!userAssessment || !userAssessment.repetitionData) {
+      // Second, test if it has repetition_data
+      console.log(`🔍 Step 2: Testing if assessment has repetition_data...`);
+      const dataResult = await db.execute(sql`
+        SELECT id, 
+               CASE WHEN repetition_data IS NOT NULL THEN 'HAS_DATA' ELSE 'NO_DATA' END as has_data,
+               LENGTH(repetition_data::text) as data_size
+        FROM user_assessments 
+        WHERE id = ${userAssessmentId}
+      `);
+      
+      console.log(`🔍 Step 2 Result:`, dataResult.rows[0]);
+      
+      // Third, try to get the actual data
+      console.log(`🔍 Step 3: Attempting to fetch repetition_data...`);
+      const result = await db.execute(sql`
+        SELECT repetition_data
+        FROM user_assessments 
+        WHERE id = ${userAssessmentId} AND repetition_data IS NOT NULL
+      `);
+      
+      console.log(`🔍 Step 3 Result: Query returned ${result.rows.length} rows`);
+      
+      if (result.rows.length === 0) {
         console.log(`❌ No assessment or repetition data found for ID: ${userAssessmentId}`);
-        return res.status(404).json({ message: "Motion data not found" });
+        return res.status(404).json({ 
+          message: "Motion data not found",
+          debug: {
+            assessmentExists: existsResult.rows.length > 0,
+            hasData: dataResult.rows[0]?.has_data,
+            dataSize: dataResult.rows[0]?.data_size
+          }
+        });
       }
       
-      console.log(`📊 Repetition data structure:`, {
-        isArray: Array.isArray(userAssessment.repetitionData),
-        length: userAssessment.repetitionData?.length,
-        firstRepHasMotionData: userAssessment.repetitionData?.[0]?.motionData ? true : false,
-        firstRepMotionDataLength: userAssessment.repetitionData?.[0]?.motionData?.length
-      });
+      const repetitionData = result.rows[0].repetition_data;
+      console.log(`✅ Found repetition data for assessment ${userAssessmentId}`);
       
-      // Extract motion data from repetition data
+      // Extract motion data from repetition data (same logic as shared-assessment.tsx)
       const motionData: any[] = [];
-      if (Array.isArray(userAssessment.repetitionData)) {
-        userAssessment.repetitionData.forEach((rep: any, index: number) => {
+      if (Array.isArray(repetitionData)) {
+        repetitionData.forEach((rep: any, index: number) => {
           console.log(`🔄 Processing repetition ${index}:`, {
             hasMotionData: !!rep.motionData,
-            motionDataLength: rep.motionData?.length || 0,
-            isArray: Array.isArray(rep.motionData)
+            motionDataLength: rep.motionData?.length || 0
           });
           
           if (rep.motionData && Array.isArray(rep.motionData)) {
@@ -1447,8 +1555,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log(`🎬 Total motion frames extracted: ${motionData.length}`);
-      res.json({ motionData });
+      console.log(`📊 Final motion data: ${motionData.length} total frames`);
+      
+      // Return in the format expected by frontend
+      res.json({ 
+        motionData: motionData,
+        totalFrames: motionData.length 
+      });
     } catch (error) {
       console.error(`❌ Error retrieving motion data:`, error);
       res.status(400).json({ message: "Failed to retrieve motion data" });
@@ -1459,7 +1572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/:userId/assessment-history", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
-      const userAssessments = await storage.getUserAssessments(userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
       const assessments = await storage.getAssessments();
       
       // Group by assessment and include session details
@@ -1488,8 +1601,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Use basic getUserAssessments instead of getUserAssessmentsForHistory to avoid column issues
-      const userAssessments = await storage.getUserAssessments(user.id);
+      // Use optimized getUserAssessmentsForHistory for better performance
+      const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
       const assessments = await storage.getAssessments();
       
       // Debug: Check if DASH assessment exists
@@ -1560,7 +1673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Fallback to searching through all users
         for (let userId = 1; userId <= 100; userId++) {
           try {
-            const userAssessments = await storage.getUserAssessments(userId);
+            const userAssessments = await storage.getUserAssessmentsForHistory(userId);
             const found = userAssessments.find(ua => ua.id === userAssessmentId);
             if (found) {
               console.log('Found userAssessment via fallback search:', { userAssessmentId, foundUserId: userId });
@@ -1798,7 +1911,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isCompleted: !!completedAssessment,
             completedAt: completedAssessment?.completedAt || null,
             userAssessmentId: completedAssessment?.id || null,
-            assessmentUrl: `/assessment/${assessment.id}/video/${user.code}`
+            assessmentUrl: `/assessment/${assessment.id}/video/${user.code}`,
+            orderIndex: assessment.orderIndex
           };
         });
 
@@ -1840,10 +1954,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isCompleted: !!dashCompletedToday,
           completedAt: dashCompletedToday?.completedAt || null,
           userAssessmentId: dashCompletedToday?.id || null,
-          assessmentUrl: `/patient/${user.code}/dash-assessment`
+          assessmentUrl: `/patient/${user.code}/dash-assessment`,
+          orderIndex: 6
         });
       }
 
+      // Sort assessments by orderIndex to ensure TAM appears first
+      todayAssessments.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+      
       console.log('API: Returning', todayAssessments.length, 'assessments for today');
       res.json({ assessments: todayAssessments });
     } catch (error) {
@@ -2558,7 +2676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Delete all user assessments first (cascade delete)
-      const userAssessments = await storage.getUserAssessments(userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
       console.log(`Deleting user ${userId} (${user.code}) with ${userAssessments.length} assessments`);
 
       // Delete user and all associated data

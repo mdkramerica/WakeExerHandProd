@@ -111,7 +111,7 @@ export default function PatientEnrollment() {
   const checkEligibilityMutation = useMutation({
     mutationFn: async ({ patientId, cohortId }: { patientId: number; cohortId: number }) => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/patients/${patientId}/eligibility/${cohortId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}/eligibility/${cohortId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -140,7 +140,7 @@ export default function PatientEnrollment() {
       eligibilityNotes?: string;
     }) => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/patients/${patientId}/enroll`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}/enroll`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

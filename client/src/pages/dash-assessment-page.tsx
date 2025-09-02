@@ -23,7 +23,7 @@ export default function DashAssessmentPage() {
 
   const completeDashMutation = useMutation({
     mutationFn: async (data: { responses: Record<number, number>; dashScore: number }) => {
-      return fetch(`/api/users/${userId}/assessments/6/complete`, {
+      return fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/assessments/6/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

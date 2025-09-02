@@ -1554,7 +1554,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAssessments(): Promise<Assessment[]> {
-    return await db.select().from(assessments).where(eq(assessments.isActive, true));
+    const result = await db.select().from(assessments)
+      .where(eq(assessments.isActive, true));
+    
+    // Sort by orderIndex in JavaScript as a fallback
+    return result.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
   }
 
   // Patient enrollment methods
@@ -1665,37 +1669,31 @@ export class DatabaseStorage implements IStorage {
 
   // Optimized method for assessment history - excludes heavy JSON fields for better performance
   async getUserAssessmentsForHistory(userId: number): Promise<UserAssessment[]> {
-    return await db.select({
-      id: userAssessments.id,
-      userId: userAssessments.userId,
-      assessmentId: userAssessments.assessmentId,
-      sessionNumber: userAssessments.sessionNumber,
-      isCompleted: userAssessments.isCompleted,
-      completedAt: userAssessments.completedAt,
-      qualityScore: userAssessments.qualityScore,
-      // Include specific ROM fields but exclude heavy JSON data
-      totalActiveRom: userAssessments.totalActiveRom,
-      indexFingerRom: userAssessments.indexFingerRom,
-      middleFingerRom: userAssessments.middleFingerRom,
-      ringFingerRom: userAssessments.ringFingerRom,
-      pinkyFingerRom: userAssessments.pinkyFingerRom,
-      kapandjiScore: userAssessments.kapandjiScore,
-      maxWristFlexion: userAssessments.maxWristFlexion,
-      maxWristExtension: userAssessments.maxWristExtension,
-      wristFlexionAngle: userAssessments.wristFlexionAngle,
-      wristExtensionAngle: userAssessments.wristExtensionAngle,
-      forearmPronationAngle: userAssessments.forearmPronationAngle,
-      forearmSupinationAngle: userAssessments.forearmSupinationAngle,
-      wristRadialDeviationAngle: userAssessments.wristRadialDeviationAngle,
-      wristUlnarDeviationAngle: userAssessments.wristUlnarDeviationAngle,
-      handType: userAssessments.handType,
-      dashScore: userAssessments.dashScore,
-      // Exclude romData and repetitionData JSON fields for performance
-      // romData: userAssessments.romData,
-      // repetitionData: userAssessments.repetitionData,
-    }).from(userAssessments)
-      .where(eq(userAssessments.userId, userId))
-      .orderBy(desc(userAssessments.completedAt));
+    try {
+      console.log(`🔍 getUserAssessmentsForHistory called for userId: ${userId}`);
+      
+      // Use raw SQL to bypass Drizzle ORM issues with complex select objects
+      const result = await db.execute(sql`
+        SELECT 
+          id, user_id as "userId", assessment_id as "assessmentId", session_number as "sessionNumber",
+          is_completed as "isCompleted", completed_at as "completedAt", quality_score as "qualityScore",
+          total_active_rom as "totalActiveRom", index_finger_rom as "indexFingerRom", 
+          middle_finger_rom as "middleFingerRom", ring_finger_rom as "ringFingerRom", 
+          pinky_finger_rom as "pinkyFingerRom", 
+          max_wrist_flexion as "maxWristFlexion", max_wrist_extension as "maxWristExtension",
+          wrist_flexion_angle as "wristFlexionAngle", wrist_extension_angle as "wristExtensionAngle",
+          hand_type as "handType", dash_score as "dashScore", share_token as "shareToken"
+        FROM user_assessments 
+        WHERE user_id = ${userId}
+        ORDER BY completed_at DESC NULLS LAST
+      `);
+      
+      console.log(`🔍 getUserAssessmentsForHistory found ${result.rows.length} assessments for userId: ${userId}`);
+      return result.rows as UserAssessment[];
+    } catch (error) {
+      console.error(`❌ getUserAssessmentsForHistory error for userId ${userId}:`, error);
+      throw error;
+    }
   }
 
   async getUserAssessmentById(id: number): Promise<UserAssessment | undefined> {
@@ -2203,7 +2201,7 @@ async function initializeDatabase() {
         {
           name: "Kapandji Score",
           description: "Thumb opposition assessment using standardized scoring",
-          videoUrl: "/videos/kapandji-assessment.mp4",
+          videoUrl: "/videos/Kapandji Demo.mp4",
           duration: 15,
           repetitions: 1,
           instructions: "Face camera palm-up. Keep fingers extended and still. Slowly move your thumb to touch: 1) Each fingertip (index, middle, ring, pinky), 2) Each finger base, 3) Palm center, 4) Beyond pinky side. Hold each position for 1 second.",

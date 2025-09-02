@@ -22,7 +22,7 @@ export default function VideoInstruction() {
       setCurrentUser(JSON.parse(savedUser));
     } else if (code) {
       // If we have a code parameter, try to verify and set the user
-      fetch(`/api/users/by-code/${code}`)
+      fetch(`${import.meta.env.VITE_API_URL}/api/users/by-code/${code}`)
         .then(res => res.json())
         .then(data => {
           if (data.user) {

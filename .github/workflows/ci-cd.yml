@@ -1,0 +1,117 @@
+name: 🚀 CI/CD Pipeline - WakeExer Hand Assessment
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # 🧪 Testing and Quality Checks
+  test:
+    name: 🧪 Test & Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: 📚 Install dependencies
+      run: npm ci
+    
+    - name: 🔍 TypeScript type checking
+      run: npm run check
+    
+    - name: 🛡️ Security audit
+      run: npm run security:check
+      continue-on-error: true  # Don't fail on audit warnings
+    
+    - name: 🏗️ Build application
+      run: npm run build
+    
+    - name: ✅ Test build artifacts
+      run: |
+        if [ ! -d "dist" ]; then
+          echo "❌ Build failed - no dist directory"
+          exit 1
+        fi
+        echo "✅ Build successful - dist directory created"
+
+  # 🎭 Deploy to Staging
+  deploy-staging:
+    name: 🎭 Deploy to Staging
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    
+    environment:
+      name: staging
+      url: https://wake-exer-app-prod-staging.up.railway.app
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🎭 Deploy to Railway Staging
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        echo "📍 Environment: staging"
+        echo "🌐 URL: https://wake-exer-app-prod-staging.up.railway.app"
+        echo "📊 Database: Staging database (contains production data copy)"
+        echo "✅ Staging deployment will be triggered automatically by Railway"
+
+  # 🏭 Deploy to Production
+  deploy-production:
+    name: 🏭 Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    environment:
+      name: production
+      url: https://wake-exer-app-prod-production.up.railway.app
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🏭 Deploy to Railway Production
+      run: |
+        echo "🚀 Deploying to production environment..."
+        echo "📍 Environment: production"
+        echo "🌐 URL: https://wake-exer-app-prod-production.up.railway.app"
+        echo "📊 Database: Production database (LIVE DATA)"
+        echo "⚠️  Production deployment requires manual approval"
+        echo "✅ Production deployment will be triggered after approval"
+
+  # 🔔 Notification
+  notify:
+    name: 🔔 Notify Deployment
+    needs: [test, deploy-staging, deploy-production]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 📊 Deployment Summary
+      run: |
+        echo "📊 Deployment Summary"
+        echo "===================="
+        echo "🧪 Tests: ${{ needs.test.result }}"
+        echo "🎭 Staging: ${{ needs.deploy-staging.result }}"
+        echo "🏭 Production: ${{ needs.deploy-production.result }}"
+        echo "===================="
+        
+        if [ "${{ needs.test.result }}" = "success" ]; then
+          echo "✅ All quality checks passed"
+        else
+          echo "❌ Quality checks failed"
+        fi

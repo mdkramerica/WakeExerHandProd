@@ -48,7 +48,7 @@ export function DashProgressTracker({ patientCode }: DashProgressTrackerProps) {
         throw new Error('Admin authentication required');
       }
 
-      const response = await fetch(`/api/admin/dash-progress/${patientCode}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/dash-progress/${patientCode}`, {
         headers: {
           'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',

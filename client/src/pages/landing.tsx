@@ -18,7 +18,7 @@ export default function Landing() {
     mutationFn: async (code: string) => {
       console.log('Attempting to verify code:', code);
       console.log('Making API request:', { method: 'POST', url: '/api/users/verify-code', data: { code } });
-      const response = await fetch('/api/users/verify-code', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/verify-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

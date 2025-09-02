@@ -53,10 +53,31 @@ export default function AssessmentHistory() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading assessment history...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Link href={`/patient/${userCode}`}>
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-6"></div>
+                <h3 className="text-lg font-medium mb-2">Loading Assessment History</h3>
+                <p className="text-muted-foreground mb-4">
+                  Retrieving your assessment records...
+                </p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm text-blue-700 dark:text-blue-300">
+                  💡 This may take a few seconds while we fetch your detailed assessment data
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

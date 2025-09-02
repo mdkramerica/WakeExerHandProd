@@ -4,7 +4,8 @@
  * This script verifies the completeness of your Railway database and ensures all data is properly populated
  */
 
-import { Pool } from 'pg';
+import pkg from 'pg';
+const { Pool } = pkg;
 import fs from 'fs';
 import path from 'path';
 

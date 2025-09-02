@@ -32,7 +32,7 @@ export default function AssessmentResults() {
 
   const generateShareLink = async () => {
     try {
-      const response = await fetch(`/api/user-assessments/${params?.userAssessmentId}/share`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user-assessments/${params?.userAssessmentId}/share`, {
         method: 'POST'
       });
       const data = await response.json();

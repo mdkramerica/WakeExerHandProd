@@ -741,7 +741,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
   app.post("/api/users/verify-code", async (req, res) => {
     try {
-      const { code } = z.object({ code: z.string().min(6) }).parse(req.body);
+      const { code } = z.object({ 
+        code: z.string().min(6).refine(
+          (val) => /^[A-Z0-9]{6}$/i.test(val) || val === 'DEMO01', 
+          "Code must be 6 characters (letters and numbers)"
+        )
+      }).parse(req.body);
       
       // Check if user already exists (legacy users or returning patients)
       let user = await storage.getUserByCode(code);
@@ -3711,7 +3716,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/users/verify-code", async (req, res) => {
     try {
-      const { code } = z.object({ code: z.string().min(6) }).parse(req.body);
+      const { code } = z.object({ 
+        code: z.string().min(6).refine(
+          (val) => /^[A-Z0-9]{6}$/i.test(val) || val === 'DEMO01', 
+          "Code must be 6 characters (letters and numbers)"
+        )
+      }).parse(req.body);
       
       // Check if user already exists (legacy users or returning patients)
       let user = await storage.getUserByCode(code);

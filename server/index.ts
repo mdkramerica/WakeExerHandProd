@@ -9,7 +9,20 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupSecurityMiddleware, securityErrorHandler, setupHealthCheck } from "./middleware.js";
 import { spawn } from "child_process";
 import path from "path";
-import { fileURLToPath } from "url";
+// Safe import of fileURLToPath with Railway environment detection
+let fileURLToPath: any;
+try {
+  if (!process.env.RAILWAY_ENVIRONMENT_NAME) {
+    const { fileURLToPath: importedFileURLToPath } = require("url");
+    fileURLToPath = importedFileURLToPath;
+  } else {
+    // In Railway environments, provide a safe fallback
+    fileURLToPath = () => process.cwd();
+  }
+} catch (error) {
+  // Ultimate fallback
+  fileURLToPath = () => process.cwd();
+}
 
 // Main application function
 function runMainApplication() {
@@ -357,27 +370,33 @@ function runMainApplication() {
 // Only allow compliance portal in local development, not in Railway environments
 const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME;
 if (process.env.RUN_COMPLIANCE_PORTAL === "true" && !isRailwayEnvironment) {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const portalPath = path.join(__dirname, "../hand-assessment-compliance-portal");
-  
-  console.log("Switching to Hand Assessment Compliance Portal...");
-  process.chdir(portalPath);
-  
-  const child = spawn("tsx", ["server/index.ts"], {
-    stdio: "inherit",
-    shell: true,
-    env: { ...process.env, NODE_ENV: "development" }
-  });
-  
-  child.on("error", (error) => {
-    console.error("Error starting compliance portal:", error.message);
-    process.exit(1);
-  });
-  
-  child.on("close", (code) => {
-    process.exit(code || 0);
-  });
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const portalPath = path.join(__dirname, "../hand-assessment-compliance-portal");
+    
+    console.log("Switching to Hand Assessment Compliance Portal...");
+    process.chdir(portalPath);
+    
+    const child = spawn("tsx", ["server/index.ts"], {
+      stdio: "inherit",
+      shell: true,
+      env: { ...process.env, NODE_ENV: "development" }
+    });
+    
+    child.on("error", (error) => {
+      console.error("Error starting compliance portal:", error.message);
+      process.exit(1);
+    });
+    
+    child.on("close", (code) => {
+      process.exit(code || 0);
+    });
+  } catch (error) {
+    console.error("Error setting up compliance portal:", error);
+    console.log("Falling back to main application");
+    runMainApplication();
+  }
 } else {
   // Run the main application
   runMainApplication();

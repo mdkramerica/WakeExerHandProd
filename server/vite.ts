@@ -5,6 +5,7 @@ import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
+import { fileURLToPath } from "url";
 
 const viteLogger = createLogger();
 
@@ -48,7 +49,7 @@ export async function setupVite(app: Express, server: Server) {
       // In production, this path won't be used since we use serveStatic instead
       const clientTemplate = process.env.NODE_ENV === 'production' 
         ? path.resolve(process.cwd(), "client", "index.html")
-        : path.resolve(import.meta.dirname, "..", "client", "index.html");
+        : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "client", "index.html");
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
@@ -73,7 +74,9 @@ export function serveStatic(app: Express) {
     // In production, the dist folder should be in the same directory as the running script
     distPath = path.resolve(process.cwd(), "dist", "public");
   } else {
-    distPath = path.resolve(import.meta.dirname, "public");
+    // In development, use import.meta to resolve the path
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    distPath = path.resolve(__dirname, "public");
   }
 
   if (!fs.existsSync(distPath)) {

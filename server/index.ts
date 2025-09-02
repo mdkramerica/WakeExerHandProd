@@ -104,7 +104,10 @@ function runMainApplication() {
 
   // BULLETPROOF video serving - try all possible paths
   let videosPath;
-  const __filename = fileURLToPath(import.meta.url);
+  // Handle path resolution for both development and production
+  const __filename = process.env.NODE_ENV === 'production' 
+    ? path.resolve(process.cwd(), 'dist', 'index.js')
+    : fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const fs = require('fs');
   

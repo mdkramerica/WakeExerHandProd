@@ -9,20 +9,8 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupSecurityMiddleware, securityErrorHandler, setupHealthCheck } from "./middleware.js";
 import { spawn } from "child_process";
 import path from "path";
-// Safe import of fileURLToPath with Railway environment detection
-let fileURLToPath: any;
-try {
-  if (!process.env.RAILWAY_ENVIRONMENT_NAME) {
-    const { fileURLToPath: importedFileURLToPath } = require("url");
-    fileURLToPath = importedFileURLToPath;
-  } else {
-    // In Railway environments, provide a safe fallback
-    fileURLToPath = () => process.cwd();
-  }
-} catch (error) {
-  // Ultimate fallback
-  fileURLToPath = () => process.cwd();
-}
+// Safe import of fileURLToPath - simplified approach for Railway compatibility
+import { fileURLToPath } from "url";
 
 // Main application function
 function runMainApplication() {
@@ -63,12 +51,15 @@ function runMainApplication() {
   const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
   
   if (isRailwayEnvironment) {
+    // In Railway environments, assets are copied to the working directory
     attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
   } else {
     try {
-      attachedAssetsPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../attached_assets');
+      // In development, use import.meta.url to resolve the path
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      attachedAssetsPath = path.join(__dirname, '../attached_assets');
     } catch (error) {
-      // Fallback for bundled environment
+      // Fallback for bundled environment or if import.meta.url fails
       attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
     }
   }

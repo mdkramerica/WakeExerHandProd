@@ -27,6 +27,9 @@ RUN npm ci --production=false
 # Copy source code
 COPY . .
 
+# Ensure attached_assets directory exists and is accessible
+RUN mkdir -p attached_assets
+
 # Build the application
 RUN npm run build
 

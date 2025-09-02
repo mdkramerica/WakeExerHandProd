@@ -9,7 +9,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupSecurityMiddleware, securityErrorHandler, setupHealthCheck } from "./middleware.js";
 import { spawn } from "child_process";
 import path from "path";
-// Safe import of fileURLToPath - simplified approach for Railway compatibility
+// Import fileURLToPath for development use only
 import { fileURLToPath } from "url";
 
 // Main application function
@@ -54,10 +54,15 @@ function runMainApplication() {
     // In Railway environments, assets are copied to the working directory
     attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
   } else {
+    // In development environments, try to use import.meta.url
+    // but fallback gracefully if it's not available
     try {
-      // In development, use import.meta.url to resolve the path
-      const __dirname = path.dirname(fileURLToPath(import.meta.url));
-      attachedAssetsPath = path.join(__dirname, '../attached_assets');
+      if (typeof import.meta !== 'undefined' && import.meta.url) {
+        const __dirname = path.dirname(fileURLToPath(import.meta.url));
+        attachedAssetsPath = path.join(__dirname, '../attached_assets');
+      } else {
+        throw new Error('import.meta.url not available');
+      }
     } catch (error) {
       // Fallback for bundled environment or if import.meta.url fails
       attachedAssetsPath = path.join(process.cwd(), 'attached_assets');

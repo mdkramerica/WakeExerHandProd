@@ -89,8 +89,12 @@ if (process.env.RUN_COMPLIANCE_PORTAL === "true") {
     }
   }));
 
-  // Serve videos from client/public/videos as fallback for legacy video URLs
-  app.use('/videos', express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), '../client/public/videos'), {
+  // Serve videos from appropriate location based on environment
+  const videosPath = process.env.NODE_ENV === 'production' 
+    ? path.join(path.dirname(fileURLToPath(import.meta.url)), 'public/videos')
+    : path.join(path.dirname(fileURLToPath(import.meta.url)), '../client/public/videos');
+  
+  app.use('/videos', express.static(videosPath, {
     maxAge: '1h', // Cache for 1 hour
     setHeaders: (res, filePath) => {
       // Security headers for static assets

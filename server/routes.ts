@@ -742,10 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/verify-code", async (req, res) => {
     try {
       const { code } = z.object({ 
-        code: z.string().min(6).refine(
-          (val) => /^[A-Z0-9]{6}$/i.test(val) || val === 'DEMO01', 
-          "Code must be 6 characters (letters and numbers)"
-        )
+        code: z.string().min(6).max(6)
       }).parse(req.body);
       
       // Check if user already exists (legacy users or returning patients)
@@ -3717,10 +3714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/users/verify-code", async (req, res) => {
     try {
       const { code } = z.object({ 
-        code: z.string().min(6).refine(
-          (val) => /^[A-Z0-9]{6}$/i.test(val) || val === 'DEMO01', 
-          "Code must be 6 characters (letters and numbers)"
-        )
+        code: z.string().min(6).max(6)
       }).parse(req.body);
       
       // Check if user already exists (legacy users or returning patients)

@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Share, Play } from "lucide-react";
+import { ArrowLeft, Share, Play, Target, CheckCircle, XCircle, Hand } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import AssessmentReplay from "@/components/assessment-replay";
 import { calculateWristResults, getWristClinicalInterpretation, getWristPercentages } from "@shared/wrist-results-calculator";
 import { PatientHeader } from "@/components/patient-header";
+import { getKapandjiInterpretation, KAPANDJI_LANDMARKS } from "@shared/kapandji-interpretation";
+import { getTAMInterpretation, getFingerColorByPercentage } from "@shared/tam-interpretation";
 
 export default function AssessmentResults() {
   const [, params] = useRoute("/assessment-results/:code/:userAssessmentId");
@@ -182,97 +184,201 @@ export default function AssessmentResults() {
 
                 {/* Kapandji Specific Scoring */}
                 {isKapandjiAssessment && (
-                  <div className="bg-white border border-gray-200 p-6 rounded-lg">
-                    <h4 className="font-medium mb-4 text-gray-900">Kapandji Opposition Score</h4>
-                    <div className="space-y-4">
-                      <div className="text-center mb-6">
-                        <div className="text-4xl font-bold text-blue-600 mb-2">
-                          {userAssessment.totalActiveRom || '0'}/10
-                        </div>
-                        <div className="text-lg text-gray-700">Thumb Opposition Score</div>
-                      </div>
-
-                      <div className="bg-white p-4 rounded border">
-                        <h5 className="font-medium mb-3 text-gray-900">Opposition Levels Achieved</h5>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span>Level 1: Index Proximal Phalanx</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 1 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 1 ? '✓' : '✗'}
-                              </span>
+                  <div className="space-y-6">
+                    {(() => {
+                      const kapandjiScore = parseFloat(userAssessment.kapandjiScore || userAssessment.totalActiveRom || '0');
+                      const interpretation = getKapandjiInterpretation(kapandjiScore);
+                      
+                      return (
+                        <>
+                          {/* Main Score Display */}
+                          <div className={`p-6 rounded-lg border-2 ${interpretation.color}`}>
+                            <div className="flex items-center gap-3 mb-4">
+                              <Target className="h-6 w-6" />
+                              <h4 className="text-xl font-semibold">Kapandji Opposition Score</h4>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Level 2: Index Middle Phalanx</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 2 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 2 ? '✓' : '✗'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Level 3: Index Finger Tip</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 3 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 3 ? '✓' : '✗'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Level 4: Middle Finger Tip</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 4 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 4 ? '✓' : '✗'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Level 5: Ring Finger Tip</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 5 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 5 ? '✓' : '✗'}
-                              </span>
+                            
+                            <div className="grid md:grid-cols-2 gap-6">
+                              <div className="text-center">
+                                <div className="text-5xl font-bold mb-2">{interpretation.score}/10</div>
+                                <div className="text-lg font-medium mb-2">{interpretation.level}</div>
+                                <div className="text-sm">{interpretation.description}</div>
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <h5 className="font-medium">Clinical Interpretation</h5>
+                                <p className="text-sm leading-relaxed">{interpretation.clinicalMeaning}</p>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-medium">Quality Score:</span>
+                                  <span>{userAssessment.qualityScore || 100}%</span>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span>Level 6: Little Finger Tip</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 6 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 6 ? '✓' : '✗'}
-                              </span>
+
+                          {/* Detailed Opposition Levels */}
+                          <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                            <h5 className="font-medium mb-4 text-gray-900 flex items-center gap-2">
+                              <CheckCircle className="h-5 w-5" />
+                              Opposition Levels Assessment
+                            </h5>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              {KAPANDJI_LANDMARKS.map((landmark, index) => {
+                                const achieved = kapandjiScore >= landmark.level;
+                                return (
+                                  <div key={landmark.level} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                        achieved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'
+                                      }`}>
+                                        {landmark.level}
+                                      </div>
+                                      <div>
+                                        <div className="font-medium text-sm">{landmark.name}</div>
+                                        <div className="text-xs text-gray-500">Level {landmark.level}</div>
+                                      </div>
+                                    </div>
+                                    <div className={`flex items-center ${achieved ? 'text-green-600' : 'text-gray-400'}`}>
+                                      {achieved ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                            <div className="flex justify-between">
-                              <span>Level 7: Little DIP Crease</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 7 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 7 ? '✓' : '✗'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Level 8: Little PIP Crease</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 8 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 8 ? '✓' : '✗'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Level 9: Little MCP Crease</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 9 ? 'text-green-600' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 9 ? '✓' : '✗'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between font-medium">
-                              <span>Level 10: Distal Palmar Crease</span>
-                              <span className={parseInt(userAssessment.totalActiveRom || '0') >= 10 ? 'text-green-600 font-bold' : 'text-red-600'}>
-                                {parseInt(userAssessment.totalActiveRom || '0') >= 10 ? '✓' : '✗'}
-                              </span>
+                            
+                            {/* Progress Summary */}
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-blue-900">Opposition Progress</span>
+                                <span className="text-sm text-blue-700">{kapandjiScore}/10 levels achieved</span>
+                              </div>
+                              <div className="w-full bg-blue-200 rounded-full h-2">
+                                <div 
+                                  className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${(kapandjiScore / 10) * 100}%` }}
+                                ></div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
 
-                      <div className="bg-gray-50 p-4 rounded border">
-                        <h5 className="font-medium mb-2 text-gray-900">Clinical Interpretation</h5>
-                        <p className="text-sm text-gray-700">
-                          {parseInt(userAssessment.totalActiveRom || '0') >= 8 ? 
-                            'Excellent thumb opposition - functional range achieved' : 
-                            parseInt(userAssessment.totalActiveRom || '0') >= 5 ? 
-                              'Good thumb opposition - adequate for most activities' : 
-                              'Limited thumb opposition - may benefit from therapy'}
-                        </p>
-                      </div>
-                    </div>
+                {/* TAM Specific Results */}
+                {assessment?.name?.includes('TAM') && userAssessment.indexFingerRom && (
+                  <div className="space-y-6">
+                    {(() => {
+                      const interpretation = getTAMInterpretation(
+                        parseFloat(userAssessment.indexFingerRom || '0'),
+                        parseFloat(userAssessment.middleFingerRom || '0'),
+                        parseFloat(userAssessment.ringFingerRom || '0'),
+                        parseFloat(userAssessment.pinkyFingerRom || '0')
+                      );
+                      
+                      return (
+                        <>
+                          {/* Main TAM Score Display */}
+                          <div className={`p-6 rounded-lg border-2 ${interpretation.overallColor}`}>
+                            <div className="flex items-center gap-3 mb-4">
+                              <Hand className="h-6 w-6" />
+                              <h4 className="text-xl font-semibold">Total Active Motion (TAM) Analysis</h4>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 gap-6 mb-6">
+                              <div className="text-center">
+                                <div className="text-5xl font-bold mb-2">{interpretation.overallScore}°</div>
+                                <div className="text-lg font-medium mb-2">{interpretation.overallLevel}</div>
+                                <div className="text-sm">{interpretation.overallDescription}</div>
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <h5 className="font-medium">Clinical Interpretation</h5>
+                                <p className="text-sm leading-relaxed">{interpretation.clinicalMeaning}</p>
+                                <p className="text-sm leading-relaxed">{interpretation.functionalImplications}</p>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-medium">Quality Score:</span>
+                                  <span>{userAssessment.qualityScore || 100}%</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Individual Finger Breakdown */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              {interpretation.fingers.map((finger) => (
+                                <div key={finger.finger} className="text-center p-4 bg-white bg-opacity-50 rounded-lg">
+                                  <div className="font-medium text-sm text-gray-700 mb-2">{finger.finger}</div>
+                                  <div className="text-2xl font-bold mb-1">{Math.round(finger.rom)}°</div>
+                                  <div className="text-sm font-medium mb-2">{finger.level}</div>
+                                  <div className="w-full bg-gray-200 rounded-full h-3 mb-1">
+                                    <div 
+                                      className={`h-3 rounded-full transition-all duration-500 ${getFingerColorByPercentage(finger.percentage)}`}
+                                      style={{ width: `${finger.percentage}%` }}
+                                    ></div>
+                                  </div>
+                                  <div className="text-xs text-gray-600">{finger.percentage}% of normal</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Detailed Joint Analysis */}
+                          <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                            <h5 className="font-medium mb-4 text-gray-900 flex items-center gap-2">
+                              <Hand className="h-5 w-5" />
+                              Finger-by-Finger Analysis
+                            </h5>
+                            
+                            <div className="grid md:grid-cols-2 gap-6">
+                              {interpretation.fingers.map((finger) => (
+                                <div key={finger.finger} className={`p-4 rounded-lg border-2 ${finger.color}`}>
+                                  <div className="flex items-center justify-between mb-3">
+                                    <h6 className="font-medium">{finger.finger} Finger</h6>
+                                    <span className="text-sm font-medium">{finger.level}</span>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                      <span>Total ROM:</span>
+                                      <span className="font-medium">{Math.round(finger.rom)}°</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span>% of Normal:</span>
+                                      <span className="font-medium">{finger.percentage}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                      <div 
+                                        className={`h-2 rounded-full transition-all duration-500 ${getFingerColorByPercentage(finger.percentage)}`}
+                                        style={{ width: `${finger.percentage}%` }}
+                                      ></div>
+                                    </div>
+                                    <div className="text-xs text-gray-600 mt-1">{finger.description}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Overall Progress Summary */}
+                            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-blue-900">Overall Hand Function</span>
+                                <span className="text-sm text-blue-700">{interpretation.overallLevel}</span>
+                              </div>
+                              <div className="w-full bg-blue-200 rounded-full h-2">
+                                <div 
+                                  className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${interpretation.fingers.reduce((sum, finger) => sum + finger.percentage, 0) / 4}%` }}
+                                ></div>
+                              </div>
+                              <div className="text-xs text-blue-700 mt-1">
+                                Average: {Math.round(interpretation.fingers.reduce((sum, finger) => sum + finger.percentage, 0) / 4)}% of normal ROM
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 

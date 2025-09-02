@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Clock, CheckCircle, AlertCircle, TrendingUp, Activity, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, CheckCircle, AlertCircle, TrendingUp, Activity, ArrowLeft, Target, Hand } from "lucide-react";
 import { Link } from "wouter";
+import { getKapandjiInterpretation } from "@shared/kapandji-interpretation";
+import { getTAMInterpretation, getFingerColorByPercentage } from "@shared/tam-interpretation";
 
 export default function DailyAssessments() {
   // Get user code from sessionStorage or URL
@@ -168,13 +170,94 @@ export default function DailyAssessments() {
                     {assessment.lastScore && (
                       <span>
                         Last score: {assessment.lastScore}
-                        {assessment.name.includes('Kapandji') ? '' : '°'}
+                        {assessment.name.includes('Kapandji') ? '/10' : '°'}
                       </span>
                     )}
                   </div>
+                  
+                  {/* Kapandji Score Display */}
+                  {assessment.isCompleted && assessment.name.includes('Kapandji') && assessment.lastScore && (
+                    <div className="mt-3">
+                      {(() => {
+                        const interpretation = getKapandjiInterpretation(parseFloat(assessment.lastScore));
+                        return (
+                          <div className={`p-3 rounded-lg border-2 ${interpretation.color}`}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Target className="h-4 w-4" />
+                              <span className="font-medium text-sm">Kapandji Opposition Score</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-2xl font-bold">{interpretation.score}/10</div>
+                                <div className="text-sm font-medium">{interpretation.level}</div>
+                              </div>
+                              <div className="text-xs text-right max-w-[200px]">
+                                <div className="font-medium mb-1">{interpretation.description}</div>
+                                <div className="text-opacity-80">{interpretation.clinicalMeaning}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* TAM Score Display */}
+                  {assessment.isCompleted && assessment.name.includes('TAM') && assessment.fingerScores && (
+                    <div className="mt-3">
+                      {(() => {
+                        const fingerScores = assessment.fingerScores;
+                        const interpretation = getTAMInterpretation(
+                          parseFloat(fingerScores.indexFingerRom || '0'),
+                          parseFloat(fingerScores.middleFingerRom || '0'),
+                          parseFloat(fingerScores.ringFingerRom || '0'),
+                          parseFloat(fingerScores.pinkyFingerRom || '0')
+                        );
+                        
+                        return (
+                          <div className={`p-3 rounded-lg border-2 ${interpretation.overallColor}`}>
+                            <div className="flex items-center gap-2 mb-3">
+                              <Hand className="h-4 w-4" />
+                              <span className="font-medium text-sm">Total Active Motion (TAM)</span>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              {/* Overall Score */}
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-xl font-bold">{interpretation.overallScore}°</div>
+                                  <div className="text-sm font-medium">{interpretation.overallLevel}</div>
+                                </div>
+                                <div className="text-xs text-right max-w-[200px]">
+                                  <div className="font-medium">{interpretation.overallDescription}</div>
+                                </div>
+                              </div>
+                              
+                              {/* Finger Breakdown */}
+                              <div className="grid grid-cols-4 gap-2">
+                                {interpretation.fingers.map((finger) => (
+                                  <div key={finger.finger} className="text-center">
+                                    <div className="text-xs font-medium text-gray-600 mb-1">{finger.finger}</div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                                      <div 
+                                        className={`h-2 rounded-full transition-all duration-500 ${getFingerColorByPercentage(finger.percentage)}`}
+                                        style={{ width: `${finger.percentage}%` }}
+                                      ></div>
+                                    </div>
+                                    <div className="text-xs font-bold">{Math.round(finger.rom)}°</div>
+                                    <div className="text-xs text-gray-500">{finger.percentage}%</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  {assessment.status === 'completed' ? (
+                  {assessment.isCompleted ? (
                     <Button variant="outline" disabled>
                       Completed
                     </Button>
@@ -183,8 +266,8 @@ export default function DailyAssessments() {
                       <Button>Start Assessment</Button>
                     </Link>
                   )}
-                  {assessment.status === 'completed' && (
-                    <Link href={`/wrist-results/${userCode}/${assessment.lastUserAssessmentId || 1}`}>
+                  {assessment.isCompleted && (
+                    <Link href={`/assessment-results/${userCode}/${assessment.lastUserAssessmentId || 1}`}>
                       <Button variant="ghost" size="sm">
                         View Results
                       </Button>

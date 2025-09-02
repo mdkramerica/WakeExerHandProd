@@ -13,6 +13,7 @@ import { calculateWristAngles } from "@shared/wrist-calculator";
 import { calculateElbowReferencedWristAngle, calculateMaxElbowWristAngles, resetRecordingSession } from "@shared/elbow-wrist-calculator";
 import { useDeviceDetection } from "@/hooks/use-device-detection";
 import { useTouchGestures } from "@/hooks/use-touch-gestures";
+import { getKapandjiInterpretation } from "@shared/kapandji-interpretation";
 
 export default function Recording() {
   console.log('🚀 RECORDING COMPONENT MOUNTED/RENDERED');
@@ -152,10 +153,31 @@ export default function Recording() {
         navigationUrl: userAssessmentId ? `/patient/${currentUser.code}/motion-replay/${userAssessmentId}` : 'fallback'
       });
       
-      toast({
-        title: "Assessment Complete!",
-        description: "Your range of motion data has been recorded successfully.",
-      });
+      // Show assessment-specific toast message
+      if (assessment?.name?.includes('Kapandji') && data?.userAssessment?.kapandjiScore) {
+        const kapandjiScore = parseFloat(data.userAssessment.kapandjiScore);
+        const interpretation = getKapandjiInterpretation(kapandjiScore);
+        toast({
+          title: "Kapandji Assessment Complete!",
+          description: `Opposition Score: ${kapandjiScore}/10 (${interpretation.level}). ${interpretation.description}`,
+        });
+      } else if (assessment?.name?.includes('TAM') && data?.userAssessment?.indexFingerRom) {
+        const tamInterpretation = getTAMInterpretation(
+          parseFloat(data.userAssessment.indexFingerRom || '0'),
+          parseFloat(data.userAssessment.middleFingerRom || '0'),
+          parseFloat(data.userAssessment.ringFingerRom || '0'),
+          parseFloat(data.userAssessment.pinkyFingerRom || '0')
+        );
+        toast({
+          title: "TAM Assessment Complete!",
+          description: `Hand Function: ${tamInterpretation.overallLevel} (${tamInterpretation.overallScore}° average). ${tamInterpretation.overallDescription}`,
+        });
+      } else {
+        toast({
+          title: "Assessment Complete!",
+          description: "Your range of motion data has been recorded successfully.",
+        });
+      }
       
       // Navigate to motion replay to show the recorded assessment
       // Add a small delay to ensure the data is saved before navigating

@@ -1908,13 +1908,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: assessment.id,
             name: assessment.name,
             description: assessment.description,
+            duration: assessment.duration || 600,
             estimatedMinutes: Math.ceil((assessment.duration || 600) / 60),
             isRequired: true,
             isCompleted: !!completedAssessment,
             completedAt: completedAssessment?.completedAt || null,
             userAssessmentId: completedAssessment?.id || null,
             assessmentUrl: `/assessment/${assessment.id}/video/${user.code}`,
-            orderIndex: assessment.orderIndex
+            orderIndex: assessment.orderIndex,
+            // Add finger ROM data for TAM assessments
+            fingerScores: completedAssessment ? {
+              indexFingerRom: completedAssessment.indexFingerRom,
+              middleFingerRom: completedAssessment.middleFingerRom,
+              ringFingerRom: completedAssessment.ringFingerRom,
+              pinkyFingerRom: completedAssessment.pinkyFingerRom,
+              totalActiveRom: completedAssessment.totalActiveRom
+            } : null,
+            // Keep lastScore for backward compatibility
+            lastScore: completedAssessment?.kapandjiScore || completedAssessment?.totalActiveRom || null,
+            lastUserAssessmentId: completedAssessment?.id || null
           };
         });
 
@@ -1951,13 +1963,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: 6,
           name: "DASH Survey", 
           description: "Weekly assessment of arm, shoulder and hand function",
+          duration: 480,
           estimatedMinutes: 8,
           isRequired: false,
           isCompleted: !!dashCompletedToday,
           completedAt: dashCompletedToday?.completedAt || null,
           userAssessmentId: dashCompletedToday?.id || null,
           assessmentUrl: `/patient/${user.code}/dash-assessment`,
-          orderIndex: 6
+          orderIndex: 6,
+          fingerScores: null, // DASH doesn't have finger scores
+          lastScore: dashCompletedToday?.dashScore || null,
+          lastUserAssessmentId: dashCompletedToday?.id || null
         });
       }
 

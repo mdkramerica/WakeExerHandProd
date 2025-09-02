@@ -119,8 +119,9 @@ export function setupSecurityMiddleware(app: Express): void {
   const speedLimiter = slowDown({
     windowMs: 15 * 60 * 1000, // 15 minutes
     delayAfter: 10, // allow 10 requests per windowMs without delay
-    delayMs: 500, // add 500ms delay per request after delayAfter
+    delayMs: () => 500, // add 500ms delay per request after delayAfter (v2 format)
     maxDelayMs: 5000, // maximum delay of 5 seconds
+    validate: { delayMs: false }, // disable warning message
   });
 
   // Apply rate limiting

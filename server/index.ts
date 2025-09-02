@@ -15,8 +15,9 @@ import { fileURLToPath } from "url";
 function runMainApplication() {
   const app = express();
   
-  // Validate required environment variables for production
-  if (process.env.NODE_ENV === 'production') {
+  // Validate required environment variables for Railway environments (staging/production)
+  const isRailwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
+  if (isRailwayEnv) {
     const requiredVars = ['DATABASE_URL', 'JWT_SECRET', 'ENCRYPTION_KEY'];
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
     
@@ -45,7 +46,10 @@ function runMainApplication() {
 
   // Serve attached assets statically with proper MIME types and security
   let attachedAssetsPath: string;
-  if (process.env.NODE_ENV === 'production') {
+  // Check if we're in a bundled/Railway environment (both staging and production)
+  const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
+  
+  if (isRailwayEnvironment) {
     attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
   } else {
     try {
@@ -82,7 +86,9 @@ function runMainApplication() {
   app.get('/debug/videos', (req, res) => {
     // Handle path resolution for both development and production
     let __filename: string;
-    if (process.env.NODE_ENV === 'production') {
+    const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
+    
+    if (isRailwayEnvironment) {
       __filename = path.resolve(process.cwd(), 'dist', 'index.js');
     } else {
       try {
@@ -121,7 +127,9 @@ function runMainApplication() {
   let videosPath;
   // Handle path resolution for both development and production
   let __filename: string;
-  if (process.env.NODE_ENV === 'production') {
+  const isRailwayEnvironment2 = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
+  
+  if (isRailwayEnvironment2) {
     __filename = path.resolve(process.cwd(), 'dist', 'index.js');
   } else {
     try {
@@ -346,7 +354,9 @@ function runMainApplication() {
 }
 
 // Check if we should run the compliance portal instead
-if (process.env.RUN_COMPLIANCE_PORTAL === "true" && process.env.NODE_ENV !== 'production') {
+// Only allow compliance portal in local development, not in Railway environments
+const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME;
+if (process.env.RUN_COMPLIANCE_PORTAL === "true" && !isRailwayEnvironment) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const portalPath = path.join(__dirname, "../hand-assessment-compliance-portal");

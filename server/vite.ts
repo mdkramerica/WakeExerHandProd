@@ -48,7 +48,9 @@ export async function setupVite(app: Express, server: Server) {
     try {
       // In production, this path won't be used since we use serveStatic instead
       let clientTemplate: string;
-      if (process.env.NODE_ENV === 'production') {
+      const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
+      
+      if (isRailwayEnvironment) {
         clientTemplate = path.resolve(process.cwd(), "client", "index.html");
       } else {
         try {
@@ -76,9 +78,10 @@ export async function setupVite(app: Express, server: Server) {
 export function serveStatic(app: Express) {
   // In production/bundled environment, use a different approach
   let distPath: string;
+  const isRailwayEnvironment = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.NODE_ENV === 'production';
   
-  if (process.env.NODE_ENV === 'production') {
-    // In production, the dist folder should be in the same directory as the running script
+  if (isRailwayEnvironment) {
+    // In Railway environments (staging/production), the dist folder should be in the same directory as the running script
     distPath = path.resolve(process.cwd(), "dist", "public");
   } else {
     // In development, use import.meta to resolve the path

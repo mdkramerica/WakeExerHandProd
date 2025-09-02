@@ -54,15 +54,10 @@ function runMainApplication() {
     // In Railway environments, assets are copied to the working directory
     attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
   } else {
-    // In development environments, try to use import.meta.url
-    // but fallback gracefully if it's not available
+    // In development, use import.meta.url to resolve the path
     try {
-      if (typeof import.meta !== 'undefined' && import.meta.url) {
-        const __dirname = path.dirname(fileURLToPath(import.meta.url));
-        attachedAssetsPath = path.join(__dirname, '../attached_assets');
-      } else {
-        throw new Error('import.meta.url not available');
-      }
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      attachedAssetsPath = path.join(__dirname, '../attached_assets');
     } catch (error) {
       // Fallback for bundled environment or if import.meta.url fails
       attachedAssetsPath = path.join(process.cwd(), 'attached_assets');

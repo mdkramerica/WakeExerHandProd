@@ -4,7 +4,8 @@
  * Run this to test your Railway database connection before full verification
  */
 
-import { Pool } from 'pg';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 async function quickTest(databaseUrl) {
   if (!databaseUrl) {

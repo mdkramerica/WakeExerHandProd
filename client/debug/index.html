@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { border-color: green; background: #f0fff0; }
+        .error { border-color: red; background: #fff0f0; }
+        .pending { border-color: orange; background: #fff8f0; }
+    </style>
+</head>
+<body>
+    <h1>Domain Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(test, status, message) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Basic JavaScript execution
+        addResult('JavaScript Execution', 'success', 'JavaScript is running');
+        
+        // Test 2: Current domain
+        addResult('Current Domain', 'success', window.location.hostname);
+        
+        // Test 3: API base URL detection
+        const apiBase = window.location.protocol + '//' + window.location.host;
+        addResult('API Base URL', 'success', apiBase);
+        
+        // Test 4: Test API call
+        addResult('API Health Check', 'pending', 'Testing...');
+        fetch('/api/health')
+            .then(response => response.json())
+            .then(data => {
+                addResult('API Health Check', 'success', `API responded: ${data.status}`);
+            })
+            .catch(error => {
+                addResult('API Health Check', 'error', `API failed: ${error.message}`);
+            });
+        
+        // Test 5: MediaPipe CDN
+        addResult('MediaPipe CDN', 'pending', 'Testing...');
+        fetch('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js')
+            .then(response => {
+                if (response.ok) {
+                    addResult('MediaPipe CDN', 'success', 'MediaPipe CDN accessible');
+                } else {
+                    addResult('MediaPipe CDN', 'error', `CDN failed: ${response.status}`);
+                }
+            })
+            .catch(error => {
+                addResult('MediaPipe CDN', 'error', `CDN error: ${error.message}`);
+            });
+        
+        // Test 6: Module loading
+        addResult('ES Modules', 'pending', 'Testing...');
+        try {
+            import('/assets/index-BqSooP0k.js')
+                .then(() => {
+                    addResult('ES Modules', 'success', 'Main bundle loaded successfully');
+                })
+                .catch(error => {
+                    addResult('ES Modules', 'error', `Module loading failed: ${error.message}`);
+                });
+        } catch (error) {
+            addResult('ES Modules', 'error', `Module import failed: ${error.message}`);
+        }
+        
+        // Test 7: Console errors
+        const originalError = console.error;
+        const errors = [];
+        console.error = function(...args) {
+            errors.push(args.join(' '));
+            originalError.apply(console, args);
+        };
+        
+        setTimeout(() => {
+            if (errors.length > 0) {
+                addResult('Console Errors', 'error', errors.join('<br>'));
+            } else {
+                addResult('Console Errors', 'success', 'No console errors detected');
+            }
+        }, 3000);
+        
+        // Test 8: React detection
+        setTimeout(() => {
+            const rootDiv = document.getElementById('root');
+            if (rootDiv && rootDiv.children.length > 0) {
+                addResult('React Mount', 'success', 'React has mounted content');
+            } else {
+                addResult('React Mount', 'error', 'React has not mounted any content');
+            }
+        }, 5000);
+    </script>
+    
+    <!-- Add the root div to test React mounting -->
+    <div id="root"></div>
+</body>
+</html>

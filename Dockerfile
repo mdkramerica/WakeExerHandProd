@@ -33,6 +33,11 @@ RUN mkdir -p attached_assets
 # Build the application
 RUN npm run build
 
+# Ensure video files are copied to the correct location for serving
+RUN mkdir -p dist/public/videos
+RUN cp -r client/public/videos/* dist/public/videos/ 2>/dev/null || true
+RUN cp -r attached_assets/*.mp4 dist/public/videos/ 2>/dev/null || true
+
 # Set NODE_ENV for runtime
 ENV NODE_ENV=production
 

@@ -52,7 +52,8 @@ export function setupSecurityMiddleware(app: Express): void {
         'http://localhost:5173',
         'http://localhost:5174',
         'https://wake-exer-app-prod-production.up.railway.app',
-        'https://handsresearch.exerai.com' // Custom domain
+        'https://handsresearch.exerai.com', // Custom domain
+        'https://wakemed.exerai.com' // WakeMed custom domain
       ];
       
       if (allowedOrigins.indexOf(origin) !== -1) {

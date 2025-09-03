@@ -41,7 +41,7 @@ export default function VideoDemo({ className = "w-full h-48" }: VideoDemoProps)
         onError={(e) => {
           console.log('Video error:', e);
         }}
-        src="/hand-tracking-demo.mov"
+        src="/attached_assets/hand-tracking-demo.mov"
       >
         Your browser does not support the video tag.
       </video>

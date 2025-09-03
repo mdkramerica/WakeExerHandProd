@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { getApiBaseUrl } from "@/lib/queryClient";
 import { PatientDetailModal } from "@/components/patient-detail-modal";
 import { IsolatedSelect } from "@/components/isolated-select";
 import exerLogoPath from "@assets/ExerLogoColor_1750399504621.png";

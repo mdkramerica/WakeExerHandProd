@@ -99,12 +99,12 @@ export default function PatientDailyDashboard() {
     enabled: !!userCode,
   });
 
-  const { data: todayAssessmentsResponse, isLoading: assessmentsLoading } = useQuery<{assessments: DailyAssessment[]}>({
-    queryKey: [`/api/users/${patient?.id}/assessments/today`],
-    enabled: !!patient?.id,
+  const { data: todayAssessmentsResponse, isLoading: assessmentsLoading } = useQuery<DailyAssessment[]>({
+    queryKey: [`/api/patients/${userCode}/daily-assessments`],
+    enabled: !!userCode,
   });
 
-  const dailyAssessments: DailyAssessment[] = todayAssessmentsResponse?.assessments || [];
+  const dailyAssessments: DailyAssessment[] = todayAssessmentsResponse || [];
 
   const { data: streakData } = useQuery<StreakData>({
     queryKey: [`/api/patients/${userCode}/streak`],
@@ -120,7 +120,7 @@ export default function PatientDailyDashboard() {
   useEffect(() => {
     const handleFocus = () => {
       console.log('Dashboard focus event - refreshing data');
-      queryClient.invalidateQueries({ queryKey: [`/api/users/${patient?.id}/assessments/today`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/patients/${userCode}/daily-assessments`] });
       queryClient.invalidateQueries({ queryKey: [`/api/patients/${userCode}/streak`] });
       queryClient.invalidateQueries({ queryKey: [`/api/patients/${userCode}/calendar`] });
       queryClient.invalidateQueries({ queryKey: [`/api/patients/by-code/${userCode}`] });

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getApiBaseUrl } from "@/lib/queryClient";
 import exerLogoPath from "@assets/ExerLogoColor_1750399504621.png";
 
 interface AdminLoginProps {
@@ -26,7 +27,8 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
     try {
       console.log("Attempting admin login with credentials:", { username });
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/login`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

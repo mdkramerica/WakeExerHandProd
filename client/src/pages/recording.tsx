@@ -14,6 +14,7 @@ import { calculateElbowReferencedWristAngle, calculateMaxElbowWristAngles, reset
 import { useDeviceDetection } from "@/hooks/use-device-detection";
 import { useTouchGestures } from "@/hooks/use-touch-gestures";
 import { getKapandjiInterpretation } from "@shared/kapandji-interpretation";
+import { getApiBaseUrl } from "@/lib/queryClient";
 
 export default function Recording() {
   console.log('🚀 RECORDING COMPONENT MOUNTED/RENDERED');
@@ -108,7 +109,8 @@ export default function Recording() {
       setCurrentUser(user);
     } else if (code) {
       // If we have a code parameter, try to verify and set the user
-      fetch(`${import.meta.env.VITE_API_URL}/api/users/by-code/${code}`)
+      const baseUrl = getApiBaseUrl();
+      fetch(`${baseUrl}/api/users/by-code/${code}`)
         .then(res => res.json())
         .then(data => {
           if (data.user) {

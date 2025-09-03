@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Play, Info, AlertTriangle, CheckCircle } from "lucide-react";
 import ProgressBar from "@/components/progress-bar";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getApiBaseUrl } from "@/lib/queryClient";
 import { useDeviceDetection } from "@/hooks/use-device-detection";
 
 export default function VideoInstruction() {
@@ -22,7 +22,8 @@ export default function VideoInstruction() {
       setCurrentUser(JSON.parse(savedUser));
     } else if (code) {
       // If we have a code parameter, try to verify and set the user
-      fetch(`${import.meta.env.VITE_API_URL}/api/users/by-code/${code}`)
+      const baseUrl = getApiBaseUrl();
+      fetch(`${baseUrl}/api/users/by-code/${code}`)
         .then(res => res.json())
         .then(data => {
           if (data.user) {

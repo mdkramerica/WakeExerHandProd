@@ -1803,8 +1803,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Core assessments count:', coreAssessments?.length);
       
       console.log('Getting user assessments for user ID:', user.id);
-      const userAssessments = await storage.getUserAssessments(user.id);
-      console.log('User assessments count:', userAssessments?.length);
+      let userAssessments;
+      try {
+        userAssessments = await storage.getUserAssessments(user.id);
+        console.log('User assessments count:', userAssessments?.length);
+      } catch (dbError) {
+        console.error('Database error getting user assessments:', dbError);
+        // Fallback to empty array if database has schema issues
+        userAssessments = [];
+        console.log('Using empty assessments array due to database error');
+      }
 
       const dailyAssessments = coreAssessments.map(assessment => {
         const completed = userAssessments.find(ua => ua.assessmentId === assessment.id && ua.isCompleted);

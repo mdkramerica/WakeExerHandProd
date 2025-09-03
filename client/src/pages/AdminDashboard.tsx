@@ -125,7 +125,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
       const [complianceRes, patientsRes, injuryTypesRes] = await Promise.all([
         fetch(`${baseUrl}/api/admin/compliance`, { headers }),
         fetch(`${baseUrl}/api/admin/patients`, { headers }),
-        fetch(`${baseUrl}/api/injury-types`)
+        fetch(`${baseUrl}/api/injury-types`, { headers })
       ]);
 
       console.log('API responses:', {

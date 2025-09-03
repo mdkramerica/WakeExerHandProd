@@ -5,7 +5,7 @@ import DashAssessment from '@/components/dash-assessment';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ArrowLeft, FileText } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiBaseUrl } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { PatientHeader } from '@/components/patient-header';
 
@@ -23,7 +23,8 @@ export default function DashAssessmentPage() {
 
   const completeDashMutation = useMutation({
     mutationFn: async (data: { responses: Record<number, number>; dashScore: number }) => {
-      return fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/assessments/6/complete`, {
+      const baseUrl = getApiBaseUrl();
+      return fetch(`${baseUrl}/api/users/${userId}/assessments/6/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Calendar, Target, Activity } from 'lucide-react';
 import { format } from 'date-fns';
+import { getApiBaseUrl } from '@/lib/queryClient';
 
 interface DashProgressData {
   patientCode: string;
@@ -48,7 +49,8 @@ export function DashProgressTracker({ patientCode }: DashProgressTrackerProps) {
         throw new Error('Admin authentication required');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/dash-progress/${patientCode}`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/dash-progress/${patientCode}`, {
         headers: {
           'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',

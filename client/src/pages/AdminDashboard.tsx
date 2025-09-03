@@ -121,10 +121,11 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
       console.log('Admin fetchData - headers:', headers);
       console.log('Admin token from sessionStorage:', sessionStorage.getItem('adminToken'));
       
+      const baseUrl = getApiBaseUrl();
       const [complianceRes, patientsRes, injuryTypesRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/api/admin/compliance`, { headers }),
-        fetch(`${import.meta.env.VITE_API_URL}/api/admin/patients`, { headers }),
-        fetch(`${import.meta.env.VITE_API_URL}/api/injury-types`)
+        fetch(`${baseUrl}/api/admin/compliance`, { headers }),
+        fetch(`${baseUrl}/api/admin/patients`, { headers }),
+        fetch(`${baseUrl}/api/injury-types`)
       ]);
 
       console.log('API responses:', {
@@ -291,7 +292,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userToDelete.id}`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/users/${userToDelete.id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
@@ -337,7 +339,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
     setIsUpdating(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userToEdit.id}`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/users/${userToEdit.id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -387,7 +390,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         requestBody.surgeryDate = surgeryDate;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/generate-code`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/generate-code`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(requestBody)
@@ -426,7 +430,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
   const downloadPatientData = async (patientId: number) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/download/${patientId}`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/download/${patientId}`, {
         headers: getAuthHeaders()
       });
 
@@ -463,7 +468,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
   const exportPatientsCsv = async () => {
     setExportingCsv(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/patients/csv`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/patients/csv`, {
         headers: getAuthHeaders()
       });
 
@@ -505,7 +511,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
   const exportAllData = async () => {
     setExportingData(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/export`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/export`, {
         headers: getAuthHeaders()
       });
 

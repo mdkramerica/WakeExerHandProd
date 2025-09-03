@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, getApiBaseUrl } from '@/lib/queryClient';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Download, Eye, Trash2, Archive, Calendar, Clock, Target, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -103,7 +103,8 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   // Delete assessment mutation
   const deleteAssessmentMutation = useMutation({
     mutationFn: async (assessmentId: number) => {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/assessments/${assessmentId}`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/assessments/${assessmentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`,
@@ -134,7 +135,8 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   // Download individual assessment
   const downloadAssessment = async (assessment: Assessment) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user-assessments/${assessment.id}/download`);
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/user-assessments/${assessment.id}/download`);
       if (!response.ok) throw new Error('Download failed');
       
       const blob = await response.blob();
@@ -176,7 +178,8 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
     try {
       const token = sessionStorage.getItem('adminToken');
       console.log('Admin token for bulk download:', token);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/patients/${patient.code}/download-all`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/admin/patients/${patient.code}/download-all`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

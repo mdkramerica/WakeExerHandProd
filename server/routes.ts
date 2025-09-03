@@ -1788,15 +1788,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/patients/:code/daily-assessments", async (req, res) => {
     try {
       const code = req.params.code;
+      console.log('Daily assessments requested for code:', code);
+      
       const user = await storage.getUserByCode(code);
+      console.log('Found user:', !!user, user?.id);
       
       if (!user) {
         return res.status(404).json({ message: "Patient not found" });
       }
 
       // Get the actual assessments from storage
+      console.log('Getting core assessments...');
       const coreAssessments = await storage.getAssessments();
+      console.log('Core assessments count:', coreAssessments?.length);
+      
+      console.log('Getting user assessments for user ID:', user.id);
       const userAssessments = await storage.getUserAssessments(user.id);
+      console.log('User assessments count:', userAssessments?.length);
 
       const dailyAssessments = coreAssessments.map(assessment => {
         const completed = userAssessments.find(ua => ua.assessmentId === assessment.id && ua.isCompleted);
@@ -1843,9 +1851,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log('Returning daily assessments:', dailyAssessments?.length);
       res.json(dailyAssessments);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch daily assessments" });
+      console.error('Daily assessments error:', error);
+      res.status(500).json({ message: "Failed to fetch daily assessments", error: error.message });
     }
   });
 

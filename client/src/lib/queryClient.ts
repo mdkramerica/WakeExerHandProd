@@ -1,7 +1,13 @@
 import { QueryClient } from "@tanstack/react-query";
 
+// Helper function to get API base URL
+export const getApiBaseUrl = () => {
+  // Use VITE_API_URL if available, otherwise use relative URLs (same domain)
+  return import.meta.env.VITE_API_URL || '';
+};
+
 const makeRequest = async (url: string, options: RequestInit = {}) => {
-  const baseUrl = import.meta.env.VITE_API_URL || '';
+  const baseUrl = getApiBaseUrl();
   
   // Get auth token from localStorage
   const token = localStorage.getItem('auth_token');
@@ -58,7 +64,7 @@ export const queryClient = new QueryClient({
 
 // Export a compatible apiRequest function for landing page
 export async function apiRequest(method: string, endpoint: string, data?: any) {
-  const baseUrl = import.meta.env.VITE_API_URL || '';
+  const baseUrl = getApiBaseUrl();
   const token = localStorage.getItem('auth_token');
   
   const config: RequestInit = {

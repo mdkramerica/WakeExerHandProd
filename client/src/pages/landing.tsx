@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getApiBaseUrl } from "@/lib/queryClient";
 import { Shield, ShieldX, Lock, Info, ArrowRight } from "lucide-react";
 import VideoDemo from "@/components/video-demo";
 
@@ -18,7 +18,8 @@ export default function Landing() {
     mutationFn: async (code: string) => {
       console.log('Attempting to verify code:', code);
       console.log('Making API request:', { method: 'POST', url: '/api/users/verify-code', data: { code } });
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/verify-code`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/users/verify-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

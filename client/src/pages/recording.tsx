@@ -14,6 +14,7 @@ import { calculateElbowReferencedWristAngle, calculateMaxElbowWristAngles, reset
 import { useDeviceDetection } from "@/hooks/use-device-detection";
 import { useTouchGestures } from "@/hooks/use-touch-gestures";
 import { getKapandjiInterpretation } from "@shared/kapandji-interpretation";
+import { getTAMInterpretation } from "@shared/tam-interpretation";
 import { getApiBaseUrl } from "@/lib/queryClient";
 
 export default function Recording() {
@@ -163,17 +164,28 @@ export default function Recording() {
           title: "Kapandji Assessment Complete!",
           description: `Opposition Score: ${kapandjiScore}/10 (${interpretation.level}). ${interpretation.description}`,
         });
-      } else if (assessment?.name?.includes('TAM') && data?.userAssessment?.indexFingerRom) {
-        const tamInterpretation = getTAMInterpretation(
-          parseFloat(data.userAssessment.indexFingerRom || '0'),
-          parseFloat(data.userAssessment.middleFingerRom || '0'),
-          parseFloat(data.userAssessment.ringFingerRom || '0'),
-          parseFloat(data.userAssessment.pinkyFingerRom || '0')
-        );
-        toast({
-          title: "TAM Assessment Complete!",
-          description: `Hand Function: ${tamInterpretation.overallLevel} (${tamInterpretation.overallScore}° average). ${tamInterpretation.overallDescription}`,
-        });
+      } else if (assessment?.name?.includes('TAM')) {
+        // TAM assessment - check if we have ROM data, otherwise show generic success
+        if (data?.userAssessment?.indexFingerRom || 
+            data?.userAssessment?.middleFingerRom || 
+            data?.userAssessment?.ringFingerRom || 
+            data?.userAssessment?.pinkyFingerRom) {
+          const tamInterpretation = getTAMInterpretation(
+            parseFloat(data.userAssessment.indexFingerRom || '0'),
+            parseFloat(data.userAssessment.middleFingerRom || '0'),
+            parseFloat(data.userAssessment.ringFingerRom || '0'),
+            parseFloat(data.userAssessment.pinkyFingerRom || '0')
+          );
+          toast({
+            title: "TAM Assessment Complete!",
+            description: `Hand Function: ${tamInterpretation.overallLevel} (${tamInterpretation.overallScore}° average). ${tamInterpretation.overallDescription}`,
+          });
+        } else {
+          toast({
+            title: "TAM Assessment Complete!",
+            description: "Your finger movement has been recorded successfully. Motion data is being processed.",
+          });
+        }
       } else {
         toast({
           title: "Assessment Complete!",

@@ -51,7 +51,8 @@ export function setupSecurityMiddleware(app: Express): void {
         'http://localhost:5000',
         'http://localhost:5173',
         'http://localhost:5174',
-        'https://your-app.railway.app' // Replace with actual Railway domain
+        'https://wake-exer-app-prod-production.up.railway.app',
+        'https://handsresearch.exerai.com' // Custom domain
       ];
       
       if (allowedOrigins.indexOf(origin) !== -1) {

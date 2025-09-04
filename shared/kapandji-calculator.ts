@@ -91,16 +91,13 @@ export function calculateKapandjiScore(landmarks: HandLandmark[]): KapandjiScore
     distalPalmarCrease: false
   };
 
-  // Check each target in order - Kapandji requires sequential scoring
+  // Check each target - Kapandji score is the highest level reached
   for (const target of targets) {
     const distance = euclideanDistance(thumbTip, target.landmark);
     if (distance < THRESHOLD) {
-      // Only allow this score if we've reached all previous levels
-      if (target.score === 1 || maxScore >= target.score - 1) {
-        maxScore = Math.max(maxScore, target.score);
-        reachedLandmarks.push(target.name);
-        (details as any)[target.key] = true;
-      }
+      maxScore = Math.max(maxScore, target.score);
+      reachedLandmarks.push(target.name);
+      (details as any)[target.key] = true;
     }
   }
 

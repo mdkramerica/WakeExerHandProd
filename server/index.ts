@@ -9,6 +9,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupSecurityMiddleware, securityErrorHandler, setupHealthCheck } from "./middleware.js";
 import { spawn } from "child_process";
 import path from "path";
+import fs from "fs";
 // Import fileURLToPath for development use only
 import { fileURLToPath } from "url";
 
@@ -102,7 +103,7 @@ function runMainApplication() {
       }
     }
     const __dirname = path.dirname(__filename);
-    const fs = require('fs');
+    // fs is already imported at the top
     
     const possiblePaths = [
       path.join(__dirname, 'public/videos'),
@@ -143,7 +144,7 @@ function runMainApplication() {
     }
   }
   const __dirname = path.dirname(__filename);
-  const fs = require('fs');
+  // fs is already imported at the top
   
   const possibleVideoPaths = [
     path.join(__dirname, 'public/videos'),
@@ -167,7 +168,7 @@ function runMainApplication() {
         }
       }
     } catch (e) {
-      console.log(`❌ Error checking ${testPath}:`, e.message);
+      console.log(`❌ Error checking ${testPath}:`, (e as Error).message);
     }
   }
   
@@ -216,19 +217,19 @@ function runMainApplication() {
             firstName: 'Admin',
             lastName: 'User',
             isActive: true
-          });
+          } as any);
           console.log('✅ Production admin user created: admin/admin123');
         } else {
           console.log('✅ Production admin user already exists');
         }
       } catch (error) {
-        console.error('⚠️ Admin user setup error (non-critical):', error.message);
+        console.error('⚠️ Admin user setup error (non-critical):', (error as Error).message);
       }
     }
 
     // Register non-API routes BEFORE static middleware to ensure they take precedence
-    const { getUserByCode } = await import("./storage.js");
-    const storage = new (await import("./storage.js")).DatabaseStorage();
+    const storageModule = await import("./storage.js");
+    const storage = new storageModule.DatabaseStorage();
 
     // Patient endpoints without /api prefix for frontend compatibility
     app.get("/patients/by-code/:code", async (req, res) => {

@@ -5,14 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, PlayCircle, Info, Play, Pause, RotateCcw } from 'lucide-react';
 import { PatientHeader } from '@/components/patient-header';
+import { NextAssessmentCTA } from '@/components/next-assessment-cta';
 
 // Simple patient-friendly motion replay component (without clinical analysis)
-function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData = [], onClose, handedness = 'Unknown' }: {
+function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData = [], onClose, handedness = 'Unknown', userCode }: {
   assessmentName: string;
   userAssessmentId?: string;
   recordingData?: any[];
   onClose: () => void;
   handedness?: string;
+  userCode: string;
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -406,6 +408,9 @@ function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData =
         </CardContent>
       </Card>
 
+      {/* Complete Next Assessment Call-to-Action */}
+      <NextAssessmentCTA userCode={userCode || ''} onClose={onClose} />
+
       <div className="flex justify-center">
         <Button onClick={onClose} variant="outline">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -607,6 +612,7 @@ export default function PatientMotionReplayPage() {
                 recordingData={motionFrames}
                 onClose={() => window.location.href = `/patient/${userCode}`}
                 handedness={detectHandedness()}
+                userCode={userCode || ''}
               />
             </div>
           ) : (

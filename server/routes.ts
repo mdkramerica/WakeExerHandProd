@@ -1836,17 +1836,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
       console.log('User assessments count:', userAssessments?.length);
 
+      const todayStr = today.toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+      
       const dailyAssessments = coreAssessments.map(assessment => {
-        const completed = userAssessments.find(ua => ua.assessmentId === assessment.id && ua.isCompleted);
+        // Find assessments completed today only
+        const completedToday = userAssessments.find(ua => {
+          if (!ua.assessmentId || ua.assessmentId !== assessment.id || !ua.isCompleted || !ua.completedAt) {
+            return false;
+          }
+          // Check if completed today
+          const completedDate = new Date(ua.completedAt).toISOString().split('T')[0];
+          return completedDate === todayStr;
+        });
+        
         return {
           id: assessment.id,
           name: assessment.name,
           description: assessment.description,
           estimatedMinutes: Math.ceil(assessment.duration / 60),
           isRequired: true,
-          isCompleted: !!completed,
-          completedAt: completed?.completedAt || null,
-          userAssessmentId: completed?.id || null,
+          isCompleted: !!completedToday,
+          completedAt: completedToday?.completedAt || null,
+          userAssessmentId: completedToday?.id || null,
           assessmentUrl: `/assessment/${assessment.id}/video/${code}`
         };
       });

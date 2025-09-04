@@ -203,11 +203,25 @@ export default function AssessmentHistory() {
                         <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            <span>{new Date(record.completedAt).toLocaleDateString()}</span>
+                            <span>{
+                              (() => {
+                                const date = record.completedAt.includes('Z') || record.completedAt.includes('+') || record.completedAt.includes('-')
+                                  ? new Date(record.completedAt)
+                                  : new Date(record.completedAt + 'Z');
+                                return date.toLocaleDateString();
+                              })()
+                            }</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            <span>{new Date(record.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>{
+                              (() => {
+                                const date = record.completedAt.includes('Z') || record.completedAt.includes('+') || record.completedAt.includes('-')
+                                  ? new Date(record.completedAt)
+                                  : new Date(record.completedAt + 'Z');
+                                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              })()
+                            }</span>
                           </div>
                           {record.handType && (
                             <div className="flex items-center gap-1">

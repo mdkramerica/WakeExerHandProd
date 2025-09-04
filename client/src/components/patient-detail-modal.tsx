@@ -226,12 +226,19 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Parse timestamp correctly handling UTC conversion
+    const date = dateString.includes('Z') || dateString.includes('+') || dateString.includes('-')
+      ? new Date(dateString)
+      : new Date(dateString + 'Z'); // Treat legacy format as UTC
+      
+    return date.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
+    }) + ' at ' + date.toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
     });
   };
 

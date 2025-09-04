@@ -52,9 +52,9 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       canvasSize: `${canvasWidth}x${canvasHeight}`
     });
     
-    if (landmarks.length !== 21) {
+    if (!landmarks || landmarks.length < 8) {
       console.log('🎯 Early return from drawKapandjiTargets:', { 
-        landmarkCount: landmarks.length 
+        landmarkCount: landmarks?.length || 0 
       });
       return;
     }
@@ -68,7 +68,24 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       const targetPosition = landmarks[targetLandmarkIndex];
       
       if (!targetPosition) {
-        console.log('🎯 No target position found');
+        console.log('🎯 No target position found, using fallback position');
+        // Fallback to center of canvas
+        const targetX = canvasWidth / 2;
+        const targetY = canvasHeight / 2;
+        console.log('🎯 Using fallback target coordinates:', { targetX, targetY });
+        
+        // Draw simple target at center
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(targetX, targetY, 30, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(10, 10, canvasWidth - 20, 50);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('🎯 Target: Center of screen (landmarks not available)', 20, 35);
         return;
       }
       
@@ -745,9 +762,9 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
                   landmarkCount: currentHandLandmarks.length
                 });
                 
-                // Simplified condition - just check if it's a Kapandji assessment and recording
-                if (assessmentType === 'Kapandji Score' && isRecording && currentHandLandmarks.length === 21) {
-                  console.log('🎯 Drawing Kapandji targets');
+                // ALWAYS draw targets for Kapandji assessments during recording
+                if (assessmentType === 'Kapandji Score' && isRecording) {
+                  console.log('🎯 Drawing Kapandji targets - ALWAYS');
                   drawKapandjiTargets(ctx, currentHandLandmarks, canvas.width, canvas.height);
                 }
               }

@@ -127,14 +127,7 @@ export default function Landing() {
             </Button>
           </form>
           
-          <div className="mt-6 text-center space-y-3">
-            <Link href="/overview">
-              <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                Browse All Assessments
-              </Button>
-            </Link>
 
-          </div>
           
 
         </CardContent>

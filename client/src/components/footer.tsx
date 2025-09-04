@@ -1,4 +1,6 @@
 import { Shield, Lock, ShieldX } from "lucide-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export default function Footer() {
   return (
@@ -17,6 +19,11 @@ export default function Footer() {
             </div>
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-800">
+            <Link href="/overview">
+              <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                Browse All Assessments
+              </Button>
+            </Link>
             <div className="flex items-center">
               <Shield className="w-4 h-4 text-green-600 mr-1" />
               <span>Secure & Private</span>

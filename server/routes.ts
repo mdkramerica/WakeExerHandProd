@@ -1845,6 +1845,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           estimatedMinutes: Math.ceil(assessment.duration / 60),
           isRequired: true,
           isCompleted: !!completed,
+          completedAt: completed?.completedAt || null,
+          userAssessmentId: completed?.id || null,
           assessmentUrl: `/assessment/${assessment.id}/video/${code}`
         };
       });

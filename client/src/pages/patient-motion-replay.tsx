@@ -457,7 +457,16 @@ export default function PatientMotionReplayPage() {
 
   // Format assessment date and time in user's local timezone
   const formatAssessmentDateTime = (dateString: string) => {
-    const date = new Date(dateString);
+    // Handle both old format (without timezone) and new format (with timezone)
+    let date: Date;
+    if (dateString.includes('Z') || dateString.includes('+') || dateString.includes('-')) {
+      // New format with timezone - parse normally
+      date = new Date(dateString);
+    } else {
+      // Old format without timezone - assume it's UTC and convert
+      date = new Date(dateString + 'Z');
+    }
+    
     return {
       date: date.toLocaleDateString(undefined, { 
         weekday: 'long', 

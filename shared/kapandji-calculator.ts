@@ -46,9 +46,9 @@ export function calculateKapandjiScore(landmarks: HandLandmark[]): KapandjiScore
   // Define anatomical targets with correct Kapandji scoring locations
   // Kapandji scoring: 1=Index proximal radial, 2=Index middle radial, 3=Index tip, 
   // 4=Middle tip, 5=Ring tip, 6=Little tip, 7=Little DIP, 8=Little PIP, 9=Little MCP, 10=Distal palmar crease
-  // Lowered threshold to 0.12 for more clinically appropriate contact detection
+  // Set threshold to 0.075 for clinically appropriate contact detection
   // This accounts for MediaPipe coordinate system and real-world hand anatomy
-  const THRESHOLD = 0.12; // Distance threshold for contact detection
+  const THRESHOLD = 0.075; // Distance threshold for contact detection
   
   // Calculate anatomical landmarks based on MediaPipe hand structure
   // Index finger landmarks: 5=MCP, 6=PIP, 7=DIP, 8=TIP

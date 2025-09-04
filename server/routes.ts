@@ -94,6 +94,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint for getUserAssessments
+  app.get("/debug-user-assessments/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      console.log(`🔍 Debug: Testing getUserAssessments for userId: ${userId}`);
+      
+      const userAssessments = await storage.getUserAssessments(userId);
+      console.log(`🔍 Debug: getUserAssessments returned ${userAssessments?.length} assessments`);
+      
+      res.json({
+        success: true,
+        userId,
+        count: userAssessments?.length || 0,
+        assessments: userAssessments?.slice(0, 3) || [], // First 3 for inspection
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error(`🔍 Debug: getUserAssessments error:`, error);
+      res.json({
+        success: false,
+        error: String(error),
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Debug endpoint to see actual column names
   app.get("/debug-columns", async (req, res) => {
     try {
@@ -2074,7 +2101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Streak endpoint error:", error);
-      res.status(500).json({ message: "Failed to fetch streak data" });
+      console.error("Error stack:", error.stack);
+      res.status(500).json({ message: "Failed to fetch streak data", error: error.message });
     }
   });
 

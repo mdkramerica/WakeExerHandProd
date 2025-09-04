@@ -1808,18 +1808,56 @@ export class DatabaseStorage implements IStorage {
       
       if (Object.keys(safeUpdates).length === 0) return undefined;
       
-      // Simple fallback: only update essential fields that definitely exist
-      const result = await db.execute(sql`
+      // Comprehensive fallback: handle all fields that might be passed
+      const updateFields = [];
+      const values = [];
+      
+      if (updates.isCompleted !== undefined) {
+        updateFields.push('is_completed = $' + (values.length + 1));
+        values.push(updates.isCompleted);
+      }
+      if (updates.completedAt !== undefined) {
+        updateFields.push('completed_at = $' + (values.length + 1));
+        values.push(updates.completedAt);
+      }
+      if (updates.qualityScore !== undefined) {
+        updateFields.push('quality_score = $' + (values.length + 1));
+        values.push(updates.qualityScore);
+      }
+      if (updates.totalActiveRom !== undefined) {
+        updateFields.push('total_active_rom = $' + (values.length + 1));
+        values.push(updates.totalActiveRom);
+      }
+      if (updates.handType !== undefined) {
+        updateFields.push('hand_type = $' + (values.length + 1));
+        values.push(updates.handType);
+      }
+      if (updates.repetitionData !== undefined) {
+        updateFields.push('repetition_data = $' + (values.length + 1));
+        values.push(JSON.stringify(updates.repetitionData));
+      }
+      if (updates.romData !== undefined) {
+        updateFields.push('rom_data = $' + (values.length + 1));
+        values.push(JSON.stringify(updates.romData));
+      }
+      if (updates.dashScore !== undefined) {
+        updateFields.push('dash_score = $' + (values.length + 1));
+        values.push(updates.dashScore);
+      }
+      
+      if (updateFields.length === 0) return undefined;
+      
+      const query = `
         UPDATE user_assessments 
-        SET 
-          is_completed = ${updates.isCompleted || false},
-          completed_at = ${updates.completedAt || null},
-          quality_score = ${updates.qualityScore || null}
-        WHERE id = ${id}
+        SET ${updateFields.join(', ')}
+        WHERE id = $${values.length + 1}
         RETURNING id, user_id as "userId", assessment_id as "assessmentId", 
                   is_completed as "isCompleted", completed_at as "completedAt",
-                  quality_score as "qualityScore"
-      `);
+                  quality_score as "qualityScore", total_active_rom as "totalActiveRom",
+                  hand_type as "handType"
+      `;
+      
+      const result = await db.execute(sql.raw(query, [...values, id]));
       return result.rows[0] as UserAssessment;
     }
   }

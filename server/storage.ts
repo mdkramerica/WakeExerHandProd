@@ -1665,7 +1665,29 @@ export class DatabaseStorage implements IStorage {
 
   async getUserAssessments(userId: number): Promise<UserAssessment[]> {
     try {
-      return await db.select().from(userAssessments).where(eq(userAssessments.userId, userId));
+      // Use specific column selection to avoid missing columns
+      return await db.select({
+        id: userAssessments.id,
+        userId: userAssessments.userId,
+        assessmentId: userAssessments.assessmentId,
+        sessionNumber: userAssessments.sessionNumber,
+        isCompleted: userAssessments.isCompleted,
+        completedAt: userAssessments.completedAt,
+        qualityScore: userAssessments.qualityScore,
+        totalActiveRom: userAssessments.totalActiveRom,
+        indexFingerRom: userAssessments.indexFingerRom,
+        middleFingerRom: userAssessments.middleFingerRom,
+        ringFingerRom: userAssessments.ringFingerRom,
+        pinkyFingerRom: userAssessments.pinkyFingerRom,
+        maxWristFlexion: userAssessments.maxWristFlexion,
+        maxWristExtension: userAssessments.maxWristExtension,
+        wristFlexionAngle: userAssessments.wristFlexionAngle,
+        wristExtensionAngle: userAssessments.wristExtensionAngle,
+        handType: userAssessments.handType,
+        dashScore: userAssessments.dashScore,
+        repetitionData: userAssessments.repetitionData,
+        shareToken: userAssessments.shareToken
+      }).from(userAssessments).where(eq(userAssessments.userId, userId));
     } catch (error) {
       console.error('Database schema error in getUserAssessments, using fallback query:', error);
       // Fallback: Use raw SQL to avoid schema issues

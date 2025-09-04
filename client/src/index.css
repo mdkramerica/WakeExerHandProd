@@ -248,34 +248,31 @@ div[class*="p-2 rounded-md bg-yellow-100"] {
   color: rgb(133 77 14) !important; /* original yellow-800 */
 }
 
-/* Fix for tabs and their active states - Use green dashboard theme */
-[data-radix-tabs-list],
-.TabsList {
+/* Fix for dashboard tabs specifically - Use green theme */
+.dashboard-tabs [data-radix-tabs-list],
+.dashboard-tabs .TabsList {
   background-color: #F0FDF4 !important; /* Green-50 background for tabs container */
   border: 1px solid #16A34A !important; /* Green-600 border */
 }
 
-[data-radix-tabs-trigger],
-.TabsTrigger {
+.dashboard-tabs [data-radix-tabs-trigger],
+.dashboard-tabs .TabsTrigger {
   background-color: #FFFFFF !important; /* White background for inactive tabs */
   color: #16A34A !important; /* Green-600 text */
   border: 1px solid #BBF7D0 !important; /* Green-200 border */
 }
 
-[data-radix-tabs-trigger][data-state="active"],
-.TabsTrigger[data-state="active"] {
+.dashboard-tabs [data-radix-tabs-trigger][data-state="active"],
+.dashboard-tabs .TabsTrigger[data-state="active"] {
   background-color: #16A34A !important; /* Green-600 background for active tab */
   color: #FFFFFF !important; /* White text for active tab */
   border: 1px solid #16A34A !important; /* Green-600 border */
   box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2) !important; /* Green shadow */
 }
 
-/* Fix for badges specifically - prevent all yellow badges */
+/* Fix for badges specifically - prevent all yellow badges (more targeted) */
 .bg-yellow-100.text-yellow-800,
-.bg-yellow-200.text-yellow-800,
-[class*="bg-yellow"],
-[data-badge],
-.badge {
+.bg-yellow-200.text-yellow-800 {
   background-color: #F3F4F6 !important; /* Light gray instead of yellow */
   color: #374151 !important;
 }

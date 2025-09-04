@@ -28,7 +28,7 @@ Replace the current key in `/Users/mattkramer/.cursor/mcp.json` with your actual
         "run",
         "@jason-tan-swe/railway-mcp",
         "--key",
-        "YOUR_ACTUAL_RAILWAY_API_TOKEN_HERE"
+        "f3f54ca8-9910-43e3-9603-9e52304ac99a"
       ]
     }
   }
@@ -40,7 +40,7 @@ Instead of putting the token directly in the config file, you can use environmen
 
 1. **Set the environment variable:**
    ```bash
-   export RAILWAY_TOKEN="your_actual_railway_api_token_here"
+   export RAILWAY_TOKEN="f3f54ca8-9910-43e3-9603-9e52304ac99a"
    ```
 
 2. **Update MCP config to use environment variable:**
@@ -75,7 +75,7 @@ You can test the Railway MCP directly before using it in Cursor:
 
 ```bash
 # Test with your actual API token
-npx @smithery/cli@latest run @jason-tan-swe/railway-mcp --key "YOUR_TOKEN_HERE"
+npx @smithery/cli@latest run @jason-tan-swe/railway-mcp --key "f3f54ca8-9910-43e3-9603-9e52304ac99a"
 ```
 
 ## 🎯 Current Configuration Status

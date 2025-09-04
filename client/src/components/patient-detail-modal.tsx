@@ -347,19 +347,17 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
 
           {/* Patient Data Tabs */}
           <Tabs defaultValue="assessments" className="w-full">
-            <TabsList className="grid w-full grid-cols-2" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+            <TabsList className="grid w-full grid-cols-2 bg-slate-50 border border-slate-200">
               <TabsTrigger 
                 value="assessments" 
-                className="flex items-center gap-2" 
-                style={{ backgroundColor: '#ffffff', color: '#1f2937', border: '1px solid #d1d5db' }}
+                className="flex items-center gap-2 bg-white text-gray-800 border border-gray-300"
               >
                 <Target className="w-4 h-4" />
                 Assessment History
               </TabsTrigger>
               <TabsTrigger 
                 value="dash-progress" 
-                className="flex items-center gap-2"
-                style={{ backgroundColor: '#ffffff', color: '#1f2937', border: '1px solid #d1d5db' }}
+                className="flex items-center gap-2 bg-white text-gray-800 border border-gray-300"
               >
                 <TrendingUp className="w-4 h-4" />
                 DASH Progress
@@ -391,15 +389,15 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
                     <p className="mt-2 text-muted-foreground">Loading assessments...</p>
                   </div>
                 ) : assessments.length === 0 ? (
-                  <Card style={{ backgroundColor: '#FFFFFF' }}>
-                    <CardContent className="py-8 text-center text-muted-foreground" style={{ backgroundColor: '#FFFFFF' }}>
+                  <Card className="bg-white">
+                    <CardContent className="py-8 text-center text-muted-foreground bg-white">
                       No assessments found for this patient.
                     </CardContent>
                   </Card>
                 ) : (
                   assessments.map((assessment) => (
-                    <Card key={assessment.id} className="hover:shadow-md transition-shadow" style={{ backgroundColor: '#FFFFFF' }}>
-                      <CardContent className="p-4" style={{ backgroundColor: '#FFFFFF' }}>
+                    <Card key={assessment.id} className="hover:shadow-md transition-shadow bg-white">
+                      <CardContent className="p-4 bg-white">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">

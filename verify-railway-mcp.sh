@@ -20,16 +20,38 @@ else
     exit 1
 fi
 
-# Check if token is present
-if grep -q "d46f257b-e26a-4c19-ae13-f754582d1a3d" "/Users/mattkramer/.cursor/mcp.json"; then
-    echo "✅ Correct API token found in configuration"
+# Check if using environment variable approach
+if grep -q "RAILWAY_TOKEN=\$RAILWAY_TOKEN" "/Users/mattkramer/.cursor/mcp.json"; then
+    echo "✅ Environment variable approach found in configuration"
 else
-    echo "❌ API token not found or incorrect"
-    exit 1
+    echo "❌ Environment variable approach not found"
+    # Check if token is present in old format
+    if grep -q "f3f54ca8-9910-43e3-9603-9e52304ac99a" "/Users/mattkramer/.cursor/mcp.json"; then
+        echo "✅ Correct API token found in configuration"
+    else
+        echo "❌ API token not found or incorrect"
+        exit 1
+    fi
 fi
 
 echo ""
 echo "🔧 Testing Railway MCP connectivity..."
+
+# Check if token is present in environment
+if [ -z "$RAILWAY_TOKEN" ]; then
+    echo "❌ RAILWAY_TOKEN environment variable not set"
+    exit 1
+else
+    echo "✅ RAILWAY_TOKEN environment variable is set"
+fi
+
+# Check if token value is correct
+if [ "$RAILWAY_TOKEN" = "f3f54ca8-9910-43e3-9603-9e52304ac99a" ]; then
+    echo "✅ RAILWAY_TOKEN value is correct"
+else
+    echo "❌ RAILWAY_TOKEN value is incorrect"
+    exit 1
+fi
 
 # Test Smithery CLI accessibility
 if command -v npx >/dev/null 2>&1; then
@@ -54,7 +76,8 @@ echo "📋 MCP Configuration Summary:"
 echo "=============================="
 echo "• Configuration file: ✅ Present"
 echo "• Railway MCP entry: ✅ Found"
-echo "• API token: ✅ Correct (d46f257b-e26a-4c19-ae13-f754582d1a3d)"
+echo "• Authentication method: ✅ Environment variable approach"
+echo "• RAILWAY_TOKEN env var: ✅ Set and correct"
 echo "• Smithery CLI: ✅ Accessible"
 echo "• Railway MCP package: ✅ Available"
 

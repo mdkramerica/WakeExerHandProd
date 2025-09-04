@@ -25,10 +25,10 @@ This is the most secure and reliable method:
 2. **Set Environment Variable:**
    ```bash
    # Add to your shell profile (~/.zshrc, ~/.bashrc)
-   export RAILWAY_TOKEN="your-token-here"
+   export RAILWAY_TOKEN="f3f54ca8-9910-43e3-9603-9e52304ac99a"
    
    # Or set temporarily
-   export RAILWAY_TOKEN="your-token-here"
+   export RAILWAY_TOKEN="f3f54ca8-9910-43e3-9603-9e52304ac99a"
    ```
 
 3. **Restart Cursor** from terminal to inherit the environment variable:
@@ -51,7 +51,7 @@ Update your MCP configuration to include the API key directly:
         "run",
         "@jason-tan-swe/railway-mcp",
         "--key",
-        "your-railway-api-token-here"
+        "f3f54ca8-9910-43e3-9603-9e52304ac99a"
       ]
     }
   }
@@ -108,10 +108,10 @@ Test the Smithery CLI directly to verify it works:
 npx @smithery/cli@latest run @jason-tan-swe/railway-mcp --help
 
 # Test with API key
-RAILWAY_TOKEN="your-token" npx @smithery/cli@latest run @jason-tan-swe/railway-mcp
+RAILWAY_TOKEN="f3f54ca8-9910-43e3-9603-9e52304ac99a" npx @smithery/cli@latest run @jason-tan-swe/railway-mcp
 
 # Test with specific key parameter
-npx @smithery/cli@latest run @jason-tan-swe/railway-mcp --key "your-token"
+npx @smithery/cli@latest run @jason-tan-swe/railway-mcp --key "f3f54ca8-9910-43e3-9603-9e52304ac99a"
 ```
 
 ## 🚨 Troubleshooting

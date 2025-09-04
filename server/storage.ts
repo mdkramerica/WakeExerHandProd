@@ -1767,13 +1767,14 @@ export class DatabaseStorage implements IStorage {
           quality_score, repetition_data, rom_data, dash_score, responses,
           total_active_rom, hand_type, 
           index_finger_rom, middle_finger_rom, ring_finger_rom, pinky_finger_rom,
-          max_wrist_flexion, max_wrist_extension, wrist_flexion_angle, wrist_extension_angle
+          max_wrist_flexion, max_wrist_extension, wrist_flexion_angle, wrist_extension_angle,
+          max_radial_deviation, max_ulnar_deviation
         ) VALUES (
           ${insertUserAssessment.userId}, 
           ${insertUserAssessment.assessmentId}, 
           ${insertUserAssessment.sessionNumber || 1},
           ${insertUserAssessment.isCompleted || false},
-          ${insertUserAssessment.completedAt ? `'${insertUserAssessment.completedAt}'::timestamptz` : null},
+          ${insertUserAssessment.completedAt || null},
           ${insertUserAssessment.qualityScore || null},
           ${insertUserAssessment.repetitionData ? JSON.stringify(insertUserAssessment.repetitionData) : null},
           ${insertUserAssessment.romData ? JSON.stringify(insertUserAssessment.romData) : null},
@@ -1788,7 +1789,9 @@ export class DatabaseStorage implements IStorage {
           ${insertUserAssessment.maxWristFlexion || null},
           ${insertUserAssessment.maxWristExtension || null},
           ${insertUserAssessment.wristFlexionAngle || null},
-          ${insertUserAssessment.wristExtensionAngle || null}
+          ${insertUserAssessment.wristExtensionAngle || null},
+          ${insertUserAssessment.maxRadialDeviation || null},
+          ${insertUserAssessment.maxUlnarDeviation || null}
         ) RETURNING id, user_id as "userId", assessment_id as "assessmentId",
                     is_completed as "isCompleted", completed_at as "completedAt",
                     quality_score as "qualityScore", dash_score as "dashScore",
@@ -1830,7 +1833,7 @@ export class DatabaseStorage implements IStorage {
         values.push(updates.isCompleted);
       }
       if (updates.completedAt !== undefined) {
-        updateFields.push('completed_at = $' + (values.length + 1) + '::timestamptz');
+        updateFields.push('completed_at = $' + (values.length + 1));
         values.push(updates.completedAt);
       }
       if (updates.qualityScore !== undefined) {
@@ -1896,6 +1899,14 @@ export class DatabaseStorage implements IStorage {
       if (updates.maxWristExtension !== undefined) {
         updateFields.push('max_wrist_extension = $' + (values.length + 1));
         values.push(updates.maxWristExtension);
+      }
+      if (updates.maxRadialDeviation !== undefined) {
+        updateFields.push('max_radial_deviation = $' + (values.length + 1));
+        values.push(updates.maxRadialDeviation);
+      }
+      if (updates.maxUlnarDeviation !== undefined) {
+        updateFields.push('max_ulnar_deviation = $' + (values.length + 1));
+        values.push(updates.maxUlnarDeviation);
       }
       
       if (updateFields.length === 0) return undefined;

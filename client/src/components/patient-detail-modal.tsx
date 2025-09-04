@@ -226,20 +226,37 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
   };
 
   const formatDate = (dateString: string) => {
-    // Parse timestamp correctly handling UTC conversion
-    const date = dateString.includes('Z') || dateString.includes('+') || dateString.includes('-')
-      ? new Date(dateString)
-      : new Date(dateString + 'Z'); // Treat legacy format as UTC
-      
-    return date.toLocaleDateString(undefined, {
+    console.log('🕐 Admin Portal Timezone Debug - Original timestamp:', dateString);
+    
+    // Force UTC interpretation for legacy timestamps (same logic as motion review)
+    let utcTimestamp: string;
+    if (dateString.includes('Z') || dateString.includes('+') || dateString.includes('-')) {
+      utcTimestamp = dateString;
+    } else {
+      utcTimestamp = dateString.replace(' ', 'T') + 'Z';
+    }
+    
+    console.log('🕐 Admin Portal Timezone Debug - UTC timestamp:', utcTimestamp);
+    
+    const date = new Date(utcTimestamp);
+    console.log('🕐 Admin Portal Timezone Debug - Date object:', date);
+    
+    const localDate = date.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
-    }) + ' at ' + date.toLocaleTimeString(undefined, {
+    });
+    
+    const localTime = date.toLocaleTimeString(undefined, {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
     });
+    
+    console.log('🕐 Admin Portal Timezone Debug - Local date:', localDate);
+    console.log('🕐 Admin Portal Timezone Debug - Local time:', localTime);
+    
+    return localDate + ' at ' + localTime;
   };
 
   const getQualityBadgeVariant = (score: number) => {

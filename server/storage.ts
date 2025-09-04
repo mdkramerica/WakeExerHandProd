@@ -1746,7 +1746,7 @@ export class DatabaseStorage implements IStorage {
           quality_score, total_active_rom, index_finger_rom, middle_finger_rom,
           ring_finger_rom, pinky_finger_rom, max_wrist_flexion, max_wrist_extension,
           wrist_flexion_angle, wrist_extension_angle, hand_type, dash_score,
-          repetition_data, share_token, created_at
+          repetition_data, share_token
         ) VALUES (
           ${insertUserAssessment.userId}, ${insertUserAssessment.assessmentId}, 
           ${insertUserAssessment.sessionNumber}, ${insertUserAssessment.isCompleted},
@@ -1757,7 +1757,7 @@ export class DatabaseStorage implements IStorage {
           ${insertUserAssessment.maxWristExtension}, ${insertUserAssessment.wristFlexionAngle},
           ${insertUserAssessment.wristExtensionAngle}, ${insertUserAssessment.handType},
           ${insertUserAssessment.dashScore}, ${insertUserAssessment.repetitionData},
-          ${insertUserAssessment.shareToken}, NOW()
+          ${insertUserAssessment.shareToken}
         ) RETURNING *
       `);
       return result.rows[0] as UserAssessment;

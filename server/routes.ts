@@ -94,6 +94,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint for testing Drizzle ORM update
+  app.post("/debug-drizzle-test", async (req, res) => {
+    try {
+      console.log('🔍 Testing Drizzle ORM update...');
+      
+      const updateResult = await db
+        .update(userAssessments)
+        .set({ 
+          isCompleted: true,
+          completedAt: new Date().toISOString(),
+          totalActiveRom: '150.5',
+          indexFingerRom: '30.0',
+          kapandjiScore: '5.0'
+        })
+        .where(eq(userAssessments.id, 1))
+        .returning();
+      
+      console.log('✅ Drizzle update test passed:', updateResult);
+      
+      res.json({ 
+        success: true,
+        result: updateResult,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Drizzle update test failed:', error);
+      res.json({ 
+        success: false,
+        error: String(error), 
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Debug endpoint for getUserAssessments
   app.get("/debug-user-assessments/:userId", async (req, res) => {
     try {

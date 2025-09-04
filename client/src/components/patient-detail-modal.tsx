@@ -225,6 +225,11 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
     window.open(`/admin/dash-results/${patient.code}/${assessmentId}`, '_blank');
   };
 
+  // View Kapandji results
+  const viewKapandjiResults = (assessmentId: number) => {
+    window.open(`/admin/kapandji-results/${patient.code}/${assessmentId}`, '_blank');
+  };
+
   const formatDate = (dateString: string) => {
     console.log('🕐 Admin Portal Timezone Debug - Original timestamp:', dateString);
     
@@ -413,6 +418,16 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
                                 size="sm"
                                 variant="outline"
                                 onClick={() => viewDashResults(assessment.id)}
+                                className="flex items-center gap-1"
+                              >
+                                <Eye className="w-4 h-4" />
+                                View Results
+                              </Button>
+                            ) : assessment.assessmentName === 'Kapandji Score' ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => viewKapandjiResults(assessment.id)}
                                 className="flex items-center gap-1"
                               >
                                 <Eye className="w-4 h-4" />

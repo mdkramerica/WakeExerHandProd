@@ -443,6 +443,16 @@ export default function PatientDailyDashboard() {
                             ✓ Complete
                           </Badge>
                           
+                          {/* Score Display for Kapandji assessments */}
+                          {assessment.name === 'Kapandji Score' && assessment.lastScore && (
+                            <div className="bg-white rounded-lg border-2 border-green-200 px-4 py-2 shadow-sm">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-green-700">{assessment.lastScore}/10</div>
+                                <div className="text-xs text-green-600 font-medium">Kapandji Score</div>
+                              </div>
+                            </div>
+                          )}
+                          
                           {/* Action Buttons */}
                           <div className="flex gap-2">
                             {/* Motion Replay Link - for non-DASH assessments */}

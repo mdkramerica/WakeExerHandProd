@@ -1760,26 +1760,23 @@ export class DatabaseStorage implements IStorage {
       return userAssessment;
     } catch (error) {
       console.error('Database insert error in createUserAssessment, using fallback:', error);
-      // Fallback: Use raw SQL to avoid schema issues
+      // Minimal fallback: only use core fields that exist in production database
       const result = await db.execute(sql`
         INSERT INTO user_assessments (
           user_id, assessment_id, session_number, is_completed, completed_at,
-          quality_score, total_active_rom, index_finger_rom, middle_finger_rom,
-          ring_finger_rom, pinky_finger_rom, max_wrist_flexion, max_wrist_extension,
-          wrist_flexion_angle, wrist_extension_angle, hand_type, dash_score,
-          repetition_data, share_token
+          quality_score, repetition_data, rom_data
         ) VALUES (
-          ${insertUserAssessment.userId}, ${insertUserAssessment.assessmentId}, 
-          ${insertUserAssessment.sessionNumber}, ${insertUserAssessment.isCompleted},
-          ${insertUserAssessment.completedAt}, ${insertUserAssessment.qualityScore},
-          ${insertUserAssessment.totalActiveRom}, ${insertUserAssessment.indexFingerRom},
-          ${insertUserAssessment.middleFingerRom}, ${insertUserAssessment.ringFingerRom},
-          ${insertUserAssessment.pinkyFingerRom}, ${insertUserAssessment.maxWristFlexion},
-          ${insertUserAssessment.maxWristExtension}, ${insertUserAssessment.wristFlexionAngle},
-          ${insertUserAssessment.wristExtensionAngle}, ${insertUserAssessment.handType},
-          ${insertUserAssessment.dashScore}, ${insertUserAssessment.repetitionData},
-          ${insertUserAssessment.shareToken}
-        ) RETURNING *
+          ${insertUserAssessment.userId}, 
+          ${insertUserAssessment.assessmentId}, 
+          ${insertUserAssessment.sessionNumber || 1},
+          ${insertUserAssessment.isCompleted || false},
+          ${insertUserAssessment.completedAt || null},
+          ${insertUserAssessment.qualityScore || null},
+          ${insertUserAssessment.repetitionData ? JSON.stringify(insertUserAssessment.repetitionData) : null},
+          ${insertUserAssessment.romData ? JSON.stringify(insertUserAssessment.romData) : null}
+        ) RETURNING id, user_id as "userId", assessment_id as "assessmentId",
+                    is_completed as "isCompleted", completed_at as "completedAt",
+                    quality_score as "qualityScore"
       `);
       return result.rows[0] as UserAssessment;
     }

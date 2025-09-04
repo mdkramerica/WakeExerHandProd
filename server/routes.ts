@@ -2022,7 +2022,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const daysSinceRecovery = Math.max(0, Math.floor((today - recoveryStartDate) / (1000 * 60 * 60 * 24)));
       
       // Get user's actual assessments to calculate real streaks
-      const userAssessments = await storage.getUserAssessments(user.id);
+      let userAssessments;
+      try {
+        userAssessments = await storage.getUserAssessments(user.id);
+      } catch (dbError) {
+        console.error('Database error in streak endpoint:', dbError);
+        userAssessments = [];
+      }
       const completedAssessments = userAssessments.filter(ua => ua.isCompleted);
       const actualCompletions = completedAssessments.length;
       

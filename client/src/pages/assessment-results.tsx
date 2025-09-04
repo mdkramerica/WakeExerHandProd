@@ -270,11 +270,14 @@ export default function AssessmentResults() {
                 {assessment?.name?.includes('TAM') && userAssessment.indexFingerRom && (
                   <div className="space-y-6">
                     {(() => {
+                      // Use totalActiveRom if available, otherwise calculate from individual fingers
+                      const totalRom = parseFloat(userAssessment.totalActiveRom || '0');
                       const interpretation = getTAMInterpretation(
                         parseFloat(userAssessment.indexFingerRom || '0'),
                         parseFloat(userAssessment.middleFingerRom || '0'),
                         parseFloat(userAssessment.ringFingerRom || '0'),
-                        parseFloat(userAssessment.pinkyFingerRom || '0')
+                        parseFloat(userAssessment.pinkyFingerRom || '0'),
+                        totalRom > 0 ? totalRom : undefined
                       );
                       
                       return (

@@ -123,7 +123,8 @@ export function getTAMInterpretation(
   indexRom: number,
   middleRom: number,
   ringRom: number,
-  pinkyRom: number
+  pinkyRom: number,
+  totalActiveRom?: number
 ): TAMInterpretation {
   const fingers = [
     getFingerInterpretation('Index', indexRom),
@@ -132,7 +133,8 @@ export function getTAMInterpretation(
     getFingerInterpretation('Pinky', pinkyRom)
   ];
   
-  const overallScore = Math.round(fingers.reduce((sum, finger) => sum + finger.rom, 0) / 4);
+  // Use totalActiveRom if provided, otherwise calculate average of individual fingers
+  const overallScore = totalActiveRom ? Math.round(totalActiveRom / 4) : Math.round(fingers.reduce((sum, finger) => sum + finger.rom, 0) / 4);
   const overall = getOverallInterpretation(fingers);
   
   return {

@@ -207,11 +207,14 @@ export default function DailyAssessments() {
                     <div className="mt-3">
                       {(() => {
                         const fingerScores = assessment.fingerScores;
+                        // Use totalActiveRom if available, otherwise calculate from individual fingers
+                        const totalRom = parseFloat(fingerScores.totalActiveRom || '0');
                         const interpretation = getTAMInterpretation(
                           parseFloat(fingerScores.indexFingerRom || '0'),
                           parseFloat(fingerScores.middleFingerRom || '0'),
                           parseFloat(fingerScores.ringFingerRom || '0'),
-                          parseFloat(fingerScores.pinkyFingerRom || '0')
+                          parseFloat(fingerScores.pinkyFingerRom || '0'),
+                          totalRom > 0 ? totalRom : undefined
                         );
                         
                         return (

@@ -457,28 +457,43 @@ export default function PatientMotionReplayPage() {
 
   // Format assessment date and time in user's local timezone
   const formatAssessmentDateTime = (dateString: string) => {
-    // Handle both old format (without timezone) and new format (with timezone)
-    let date: Date;
+    console.log('🕐 Timezone Debug - Original timestamp:', dateString);
+    
+    // Force UTC interpretation for legacy timestamps
+    let utcTimestamp: string;
     if (dateString.includes('Z') || dateString.includes('+') || dateString.includes('-')) {
-      // New format with timezone - parse normally
-      date = new Date(dateString);
+      // Already has timezone info
+      utcTimestamp = dateString;
     } else {
-      // Old format without timezone - assume it's UTC and convert
-      date = new Date(dateString + 'Z');
+      // Legacy format - force UTC interpretation by adding Z
+      utcTimestamp = dateString.replace(' ', 'T') + 'Z';
     }
     
+    console.log('🕐 Timezone Debug - UTC timestamp:', utcTimestamp);
+    
+    const date = new Date(utcTimestamp);
+    console.log('🕐 Timezone Debug - Date object:', date);
+    console.log('🕐 Timezone Debug - Timezone offset (minutes):', date.getTimezoneOffset());
+    
+    const localDate = date.toLocaleDateString(undefined, { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    const localTime = date.toLocaleTimeString(undefined, { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    
+    console.log('🕐 Timezone Debug - Local date:', localDate);
+    console.log('🕐 Timezone Debug - Local time:', localTime);
+    
     return {
-      date: date.toLocaleDateString(undefined, { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      time: date.toLocaleTimeString(undefined, { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      })
+      date: localDate,
+      time: localTime
     };
   };
 

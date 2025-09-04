@@ -1764,7 +1764,10 @@ export class DatabaseStorage implements IStorage {
       const result = await db.execute(sql`
         INSERT INTO user_assessments (
           user_id, assessment_id, session_number, is_completed, completed_at,
-          quality_score, repetition_data, rom_data, dash_score, responses
+          quality_score, repetition_data, rom_data, dash_score, responses,
+          total_active_rom, hand_type, 
+          index_finger_rom, middle_finger_rom, ring_finger_rom, pinky_finger_rom,
+          max_wrist_flexion, max_wrist_extension, wrist_flexion_angle, wrist_extension_angle
         ) VALUES (
           ${insertUserAssessment.userId}, 
           ${insertUserAssessment.assessmentId}, 
@@ -1775,11 +1778,21 @@ export class DatabaseStorage implements IStorage {
           ${insertUserAssessment.repetitionData ? JSON.stringify(insertUserAssessment.repetitionData) : null},
           ${insertUserAssessment.romData ? JSON.stringify(insertUserAssessment.romData) : null},
           ${insertUserAssessment.dashScore || null},
-          ${insertUserAssessment.responses ? JSON.stringify(insertUserAssessment.responses) : null}
+          ${insertUserAssessment.responses ? JSON.stringify(insertUserAssessment.responses) : null},
+          ${insertUserAssessment.totalActiveRom || null},
+          ${insertUserAssessment.handType || null},
+          ${insertUserAssessment.indexFingerRom || null},
+          ${insertUserAssessment.middleFingerRom || null},
+          ${insertUserAssessment.ringFingerRom || null},
+          ${insertUserAssessment.pinkyFingerRom || null},
+          ${insertUserAssessment.maxWristFlexion || null},
+          ${insertUserAssessment.maxWristExtension || null},
+          ${insertUserAssessment.wristFlexionAngle || null},
+          ${insertUserAssessment.wristExtensionAngle || null}
         ) RETURNING id, user_id as "userId", assessment_id as "assessmentId",
                     is_completed as "isCompleted", completed_at as "completedAt",
                     quality_score as "qualityScore", dash_score as "dashScore",
-                    responses
+                    responses, total_active_rom as "totalActiveRom", hand_type as "handType"
       `);
       return result.rows[0] as UserAssessment;
     }
@@ -1847,6 +1860,42 @@ export class DatabaseStorage implements IStorage {
       if (updates.responses !== undefined) {
         updateFields.push('responses = $' + (values.length + 1));
         values.push(typeof updates.responses === 'string' ? updates.responses : JSON.stringify(updates.responses));
+      }
+      if (updates.totalActiveRom !== undefined) {
+        updateFields.push('total_active_rom = $' + (values.length + 1));
+        values.push(updates.totalActiveRom);
+      }
+      if (updates.indexFingerRom !== undefined) {
+        updateFields.push('index_finger_rom = $' + (values.length + 1));
+        values.push(updates.indexFingerRom);
+      }
+      if (updates.middleFingerRom !== undefined) {
+        updateFields.push('middle_finger_rom = $' + (values.length + 1));
+        values.push(updates.middleFingerRom);
+      }
+      if (updates.ringFingerRom !== undefined) {
+        updateFields.push('ring_finger_rom = $' + (values.length + 1));
+        values.push(updates.ringFingerRom);
+      }
+      if (updates.pinkyFingerRom !== undefined) {
+        updateFields.push('pinky_finger_rom = $' + (values.length + 1));
+        values.push(updates.pinkyFingerRom);
+      }
+      if (updates.wristFlexionAngle !== undefined) {
+        updateFields.push('wrist_flexion_angle = $' + (values.length + 1));
+        values.push(updates.wristFlexionAngle);
+      }
+      if (updates.wristExtensionAngle !== undefined) {
+        updateFields.push('wrist_extension_angle = $' + (values.length + 1));
+        values.push(updates.wristExtensionAngle);
+      }
+      if (updates.maxWristFlexion !== undefined) {
+        updateFields.push('max_wrist_flexion = $' + (values.length + 1));
+        values.push(updates.maxWristFlexion);
+      }
+      if (updates.maxWristExtension !== undefined) {
+        updateFields.push('max_wrist_extension = $' + (values.length + 1));
+        values.push(updates.maxWristExtension);
       }
       
       if (updateFields.length === 0) return undefined;

@@ -435,7 +435,11 @@ export default function Recording() {
       wristFlexionAngle: currentFlexion,
       wristExtensionAngle: currentExtension,
       maxWristFlexion: maxWristFlexion,
-      maxWristExtension: maxWristExtension
+      maxWristExtension: maxWristExtension,
+      // Add frame dimensions from the first motion frame
+      frameWidth: recordingMotionDataRef.current[0]?.frameWidth || 640,
+      frameHeight: recordingMotionDataRef.current[0]?.frameHeight || 480,
+      recordingResolution: recordingMotionDataRef.current[0]?.recordingResolution || "640x480"
     };
 
     const newRecordedData = [...recordedData, repetitionData];
@@ -461,7 +465,11 @@ export default function Recording() {
       assessmentId: id,
       repetitionsCompleted: currentRepetition,
       totalDuration: finalRecordedData.reduce((sum, rep) => sum + rep.duration, 0),
-      averageQuality: finalRecordedData.length > 0 ? finalRecordedData.reduce((sum, rep) => sum + rep.qualityScore, 0) / finalRecordedData.length : 0
+      averageQuality: finalRecordedData.length > 0 ? finalRecordedData.reduce((sum, rep) => sum + rep.qualityScore, 0) / finalRecordedData.length : 0,
+      // Add frame dimensions from the first repetition
+      frameWidth: finalRecordedData[0]?.frameWidth || 640,
+      frameHeight: finalRecordedData[0]?.frameHeight || 480,
+      recordingResolution: finalRecordedData[0]?.recordingResolution || "640x480"
     };
 
     console.log(`Completing assessment with ${finalRecordedData.length} repetitions:`, finalRecordedData);
@@ -658,8 +666,11 @@ export default function Recording() {
           handedness: sessionHandType !== 'UNKNOWN' ? sessionHandType : (data.sessionHandType || data.lockedHandType || data.detectedHandSide || data.handType || "LEFT"),
           sessionHandType: sessionHandType !== 'UNKNOWN' ? sessionHandType : (data.sessionHandType || data.lockedHandType || data.detectedHandSide || "LEFT"),
           sessionElbowIndex: data.sessionElbowIndex,
-          cameraWidth: data.cameraWidth || 640,
-          cameraHeight: data.cameraHeight || 480,
+          cameraWidth: data.frameWidth || 640,
+          cameraHeight: data.frameHeight || 480,
+          frameWidth: data.frameWidth || 640,
+          frameHeight: data.frameHeight || 480,
+          recordingResolution: data.recordingResolution || "640x480",
           qualityScore: 1.0
         };
         

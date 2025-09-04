@@ -1204,6 +1204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             // Get the assessment to determine which calculation to use
             const assessment = await storage.getAssessment(assessmentId);
+            console.log('🔍 Assessment retrieved:', { id: assessment?.id, name: assessment?.name });
             
             if (assessment?.name === "Kapandji Score") {
               try {
@@ -1246,17 +1247,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
               
             } else {
-              // Use standard ROM calculation for other assessments
-              const romCalculatorModule = await import('../shared/rom-calculator');
-              const { calculateAllFingersMaxROM } = romCalculatorModule;
-              
-              // Ensure motion frames have the correct structure
-              const formattedFrames = allMotionFrames.map(frame => ({
-                landmarks: frame.landmarks || frame
-              }));
-              
-              console.log(`Calculating ROM for ${formattedFrames.length} motion frames`);
-              const allFingersROM = calculateAllFingersMaxROM(formattedFrames);
+              try {
+                console.log('🏃 Starting TAM/ROM calculation for assessment:', assessment?.name);
+                // Use standard ROM calculation for other assessments
+                const romCalculatorModule = await import('../shared/rom-calculator');
+                console.log('🏃 ROM calculator module imported successfully');
+                
+                const { calculateAllFingersMaxROM } = romCalculatorModule;
+                console.log('🏃 calculateAllFingersMaxROM function extracted');
+                
+                // Ensure motion frames have the correct structure
+                const formattedFrames = allMotionFrames.map(frame => ({
+                  landmarks: frame.landmarks || frame
+                }));
+                
+                console.log(`🏃 Calculating ROM for ${formattedFrames.length} motion frames`);
+                console.log('🏃 First frame sample:', formattedFrames[0] ? Object.keys(formattedFrames[0]) : 'No frames');
+                
+                const allFingersROM = calculateAllFingersMaxROM(formattedFrames);
+                console.log('🏃 ROM calculation completed successfully');
               
               console.log('Raw allFingersROM object:', JSON.stringify(allFingersROM, null, 2));
               
@@ -1318,7 +1327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 ? allFingersROM.pinky?.dipAngle || null
                 : null;
               
-              console.log('Multi-finger ROM calculated with temporal validation:', {
+              console.log('🏃 Multi-finger ROM calculated with temporal validation:', {
                 index: indexFingerRom,
                 middle: middleFingerRom,
                 ring: ringFingerRom,
@@ -1326,11 +1335,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 temporalQuality: temporalQuality
               });
               
+              // Calculate total active ROM for this assessment
+              totalActiveRom = [indexFingerRom, middleFingerRom, ringFingerRom, pinkyFingerRom]
+                .filter(rom => rom !== null && rom !== undefined)
+                .reduce((sum, rom) => sum + rom, 0) || null;
+              
+              console.log('🏃 TAM assessment completed with total ROM:', totalActiveRom);
+              
               console.log('Individual joint angles calculated:', {
                 middle: { mcp: middleFingerMcp, pip: middleFingerPip, dip: middleFingerDip },
                 ring: { mcp: ringFingerMcp, pip: ringFingerPip, dip: ringFingerDip },
                 pinky: { mcp: pinkyFingerMcp, pip: pinkyFingerPip, dip: pinkyFingerDip }
               });
+              
+              } catch (tamError) {
+                console.error('❌ Error in TAM/ROM calculation:', tamError);
+                console.error('❌ TAM error stack:', tamError.stack);
+                throw new Error(`TAM calculation failed: ${tamError.message}`);
+              }
             }
           } catch (error) {
             console.log('ROM calculation for all fingers failed:', error);

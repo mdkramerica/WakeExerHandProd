@@ -44,6 +44,8 @@ export function calculateKapandjiScore(landmarks: HandLandmark[]): KapandjiScore
   const thumbTip = landmarks[4];
   
   // Define anatomical targets with correct Kapandji scoring locations
+  // Kapandji scoring: 1=Index proximal radial, 2=Index middle radial, 3=Index tip, 
+  // 4=Middle tip, 5=Ring tip, 6=Little tip, 7=Little DIP, 8=Little PIP, 9=Little MCP, 10=Distal palmar crease
   // Increased threshold to 0.055 for more clinically appropriate contact detection
   // This accounts for MediaPipe coordinate system and real-world hand anatomy
   const THRESHOLD = 0.055; // Distance threshold for contact detection
@@ -62,16 +64,16 @@ export function calculateKapandjiScore(landmarks: HandLandmark[]): KapandjiScore
   const distalPalmarCrease = averageLandmarks([0, 9, 13, 17], landmarks); // Distal palmar crease
   
   const targets = [
-    { landmark: indexProximalSide, score: 1, name: 'Index Proximal Phalanx (Radial)', key: 'indexProximalPhalanx' },
-    { landmark: indexMiddleSide, score: 2, name: 'Index Middle Phalanx (Radial)', key: 'indexMiddlePhalanx' },
-    { landmark: landmarks[8], score: 3, name: 'Index Finger Tip', key: 'indexTip' },
-    { landmark: landmarks[12], score: 4, name: 'Middle Finger Tip', key: 'middleTip' },
-    { landmark: landmarks[16], score: 5, name: 'Ring Finger Tip', key: 'ringTip' },
-    { landmark: landmarks[20], score: 6, name: 'Little Finger Tip', key: 'littleTip' },
-    { landmark: littleDipCrease, score: 7, name: 'Little DIP Joint Crease', key: 'littleDipCrease' },
-    { landmark: littlePipCrease, score: 8, name: 'Little PIP Joint Crease', key: 'littlePipCrease' },
-    { landmark: littleMcpCrease, score: 9, name: 'Little MCP Joint Crease', key: 'littleMcpCrease' },
-    { landmark: distalPalmarCrease, score: 10, name: 'Distal Palmar Crease', key: 'distalPalmarCrease' },
+    { landmark: indexProximalSide, score: 1, name: 'Radial side of proximal phalanx of index finger', key: 'indexProximalPhalanx' },
+    { landmark: indexMiddleSide, score: 2, name: 'Radial side of middle phalanx of index finger', key: 'indexMiddlePhalanx' },
+    { landmark: landmarks[8], score: 3, name: 'Tip of index finger', key: 'indexTip' },
+    { landmark: landmarks[12], score: 4, name: 'Tip of middle finger', key: 'middleTip' },
+    { landmark: landmarks[16], score: 5, name: 'Tip of ring finger', key: 'ringTip' },
+    { landmark: landmarks[20], score: 6, name: 'Tip of little finger', key: 'littleTip' },
+    { landmark: littleDipCrease, score: 7, name: 'DIP joint crease of little finger', key: 'littleDipCrease' },
+    { landmark: littlePipCrease, score: 8, name: 'PIP joint crease of little finger', key: 'littlePipCrease' },
+    { landmark: littleMcpCrease, score: 9, name: 'MCP joint crease of little finger', key: 'littleMcpCrease' },
+    { landmark: distalPalmarCrease, score: 10, name: 'Distal palmar crease', key: 'distalPalmarCrease' },
   ];
 
   let maxScore = 0;

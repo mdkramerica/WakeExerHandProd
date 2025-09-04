@@ -22,14 +22,102 @@ interface HolisticTrackerProps {
   showSkeletonOverlay?: boolean;
   onMultiHandDetected?: (detected: boolean, count: number) => void;
   onHandValidation?: (isValid: boolean) => void;
+  // Kapandji target system props
+  kapandjiTargetState?: any;
+  bestKapandjiScore?: number | null;
 }
 
-export default function HolisticTracker({ onUpdate, isRecording, assessmentType, sessionMaxWristAngles, lockedHandType, showSkeletonOverlay = true, onMultiHandDetected, onHandValidation }: HolisticTrackerProps) {
+export default function HolisticTracker({ onUpdate, isRecording, assessmentType, sessionMaxWristAngles, lockedHandType, showSkeletonOverlay = true, onMultiHandDetected, onHandValidation, kapandjiTargetState, bestKapandjiScore }: HolisticTrackerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const skeletonCanvasRef = useRef<HTMLCanvasElement>(null);
   const holisticRef = useRef<any>(null);
   const animationRef = useRef<number>();
+  const pulsePhaseRef = useRef<number>(0);
+
+  // Import target system functions
+  const { getCurrentTarget, getTargetPosition, getProgressMessage } = (() => {
+    try {
+      return require('@shared/kapandji-target-system');
+    } catch (e) {
+      console.warn('Kapandji target system not available:', e);
+      return { getCurrentTarget: () => null, getTargetPosition: () => null, getProgressMessage: () => '' };
+    }
+  })();
+
+  // Kapandji target drawing function
+  const drawKapandjiTargets = (ctx: CanvasRenderingContext2D, landmarks: any[], canvasWidth: number, canvasHeight: number) => {
+    if (!kapandjiTargetState || landmarks.length !== 21) return;
+    
+    try {
+      pulsePhaseRef.current += 0.1;
+      const pulse = Math.sin(pulsePhaseRef.current) * 0.3 + 0.7; // Pulse between 0.4 and 1.0
+      
+      const currentTarget = getCurrentTarget(kapandjiTargetState);
+      if (!currentTarget) return;
+      
+      const targetPosition = getTargetPosition(currentTarget, landmarks);
+      const targetX = targetPosition.x * canvasWidth;
+      const targetY = targetPosition.y * canvasHeight;
+      
+      const baseRadius = 25;
+      const pulseRadius = baseRadius * pulse;
+      const isAchieved = kapandjiTargetState.isTargetReached;
+      
+      // Outer pulsing ring
+      ctx.strokeStyle = isAchieved ? '#10B981' : '#3B82F6';
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.6 * pulse;
+      ctx.beginPath();
+      ctx.arc(targetX, targetY, pulseRadius + 10, 0, 2 * Math.PI);
+      ctx.stroke();
+      
+      // Inner target circle
+      ctx.globalAlpha = 0.8;
+      ctx.strokeStyle = isAchieved ? '#059669' : '#2563EB';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(targetX, targetY, baseRadius, 0, 2 * Math.PI);
+      ctx.stroke();
+      
+      // Target center dot
+      ctx.fillStyle = isAchieved ? '#10B981' : '#3B82F6';
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(targetX, targetY, 4, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Target crosshairs
+      ctx.strokeStyle = isAchieved ? '#059669' : '#2563EB';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.8;
+      
+      // Horizontal line
+      ctx.beginPath();
+      ctx.moveTo(targetX - 15, targetY);
+      ctx.lineTo(targetX + 15, targetY);
+      ctx.stroke();
+      
+      // Vertical line
+      ctx.beginPath();
+      ctx.moveTo(targetX, targetY - 15);
+      ctx.lineTo(targetX, targetY + 15);
+      ctx.stroke();
+      
+      ctx.globalAlpha = 1;
+      
+      // Draw progress message
+      const message = getProgressMessage(kapandjiTargetState, bestKapandjiScore);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(10, 10, canvasWidth - 20, 50);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 14px Arial';
+      ctx.fillText(message, 20, 35);
+      
+    } catch (error) {
+      console.warn('Error drawing Kapandji targets:', error);
+    }
+  };
   
   const [holisticInitialized, setHolisticInitialized] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
@@ -633,6 +721,11 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
                   ctx.arc(x, y, 3, 0, 2 * Math.PI);
                   ctx.fill();
                 });
+                
+                // Draw Kapandji targets if this is a Kapandji assessment
+                if (assessmentType === 'Kapandji Score' && kapandjiTargetState && isRecording) {
+                  drawKapandjiTargets(ctx, currentHandLandmarks, canvas.width, canvas.height);
+                }
               }
               
             } catch (error) {

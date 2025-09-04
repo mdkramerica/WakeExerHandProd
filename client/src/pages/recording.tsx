@@ -21,7 +21,6 @@ import {
   updateTargetState, 
   type TargetState 
 } from "@shared/kapandji-target-system";
-import KapandjiTargetOverlay from "@/components/kapandji-target-overlay";
 
 export default function Recording() {
   console.log('🚀 RECORDING COMPONENT MOUNTED/RENDERED');
@@ -109,7 +108,6 @@ export default function Recording() {
   // Kapandji target system state
   const [kapandjiTargetState, setKapandjiTargetState] = useState<TargetState | null>(null);
   const [bestKapandjiScore, setBestKapandjiScore] = useState<number | null>(null);
-  const holisticCanvasRef = useRef<HTMLCanvasElement>(null);
   
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -804,20 +802,9 @@ export default function Recording() {
                   showSkeletonOverlay={showSkeletonOverlay}
                   onHandValidation={handleHandValidation}
                   onMultiHandDetected={handleMultiHandDetected}
+                  kapandjiTargetState={kapandjiTargetState}
+                  bestKapandjiScore={bestKapandjiScore}
                 />
-                
-                {/* Kapandji Target Overlay */}
-                {isKapandjiAssessment && kapandjiTargetState && currentLandmarks.length === 21 && (
-                  <KapandjiTargetOverlay
-                    canvasRef={{ current: document.querySelector('canvas') }}
-                    handLandmarks={currentLandmarks}
-                    targetState={kapandjiTargetState}
-                    bestEverScore={bestKapandjiScore}
-                    isVisible={true}
-                    canvasWidth={640}
-                    canvasHeight={480}
-                  />
-                )}
                 
                 {/* Subtle multi-hand warning */}
                 {handValidation.showWarning && !isRecording && (

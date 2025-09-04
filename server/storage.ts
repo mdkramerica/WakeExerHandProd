@@ -1850,22 +1850,16 @@ export class DatabaseStorage implements IStorage {
     console.log('🔍 updateUserAssessment called with:', { id, updateKeys: Object.keys(updates), updates: JSON.stringify(updates, null, 2) });
     
     try {
-      // Filter out undefined values and convert strings to proper types for numeric fields
+      // Filter out undefined values - let Drizzle handle type conversion
       const cleanUpdates: any = {};
       
       Object.entries(updates).forEach(([key, value]) => {
         if (value !== undefined) {
-          // Convert string numbers back to numbers for numeric fields
-          if (['indexFingerRom', 'middleFingerRom', 'ringFingerRom', 'pinkyFingerRom', 'kapandjiScore', 'totalActiveRom', 'qualityScore'].includes(key) && typeof value === 'string') {
-            const numValue = parseFloat(value);
-            cleanUpdates[key] = isNaN(numValue) ? null : numValue;
-          } else {
-            cleanUpdates[key] = value;
-          }
+          cleanUpdates[key] = value;
         }
       });
       
-      console.log('🔍 Cleaned updates for Drizzle:', cleanUpdates);
+      console.log('🔍 Raw updates for Drizzle (no type conversion):', cleanUpdates);
       
       const [userAssessment] = await db
         .update(userAssessments)

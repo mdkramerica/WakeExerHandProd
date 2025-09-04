@@ -1795,17 +1795,30 @@ export class DatabaseStorage implements IStorage {
       return userAssessment;
     } catch (error) {
       console.error('Database update error in updateUserAssessment, using fallback:', error);
-      // Fallback: Use raw SQL to avoid schema issues
-      const setClause = Object.entries(updates)
-        .filter(([key, value]) => value !== undefined)
-        .map(([key, value]) => `${key.replace(/([A-Z])/g, '_$1').toLowerCase()} = ${typeof value === 'string' ? `'${value}'` : value}`)
-        .join(', ');
+      // Fallback: Use safe parameter-based update for known fields only
+      const safeUpdates: any = {};
+      if (updates.isCompleted !== undefined) safeUpdates.is_completed = updates.isCompleted;
+      if (updates.completedAt !== undefined) safeUpdates.completed_at = updates.completedAt;
+      if (updates.qualityScore !== undefined) safeUpdates.quality_score = updates.qualityScore;
+      if (updates.totalActiveRom !== undefined) safeUpdates.total_active_rom = updates.totalActiveRom;
+      if (updates.handType !== undefined) safeUpdates.hand_type = updates.handType;
+      if (updates.dashScore !== undefined) safeUpdates.dash_score = updates.dashScore;
+      if (updates.repetitionData !== undefined) safeUpdates.repetition_data = JSON.stringify(updates.repetitionData);
+      if (updates.romData !== undefined) safeUpdates.rom_data = JSON.stringify(updates.romData);
       
-      if (!setClause) return undefined;
+      if (Object.keys(safeUpdates).length === 0) return undefined;
       
       const result = await db.execute(sql`
         UPDATE user_assessments 
-        SET ${sql.raw(setClause)}
+        SET 
+          is_completed = ${safeUpdates.is_completed || false},
+          completed_at = ${safeUpdates.completed_at || null},
+          quality_score = ${safeUpdates.quality_score || null},
+          total_active_rom = ${safeUpdates.total_active_rom || null},
+          hand_type = ${safeUpdates.hand_type || null},
+          dash_score = ${safeUpdates.dash_score || null},
+          repetition_data = ${safeUpdates.repetition_data || null},
+          rom_data = ${safeUpdates.rom_data || null}
         WHERE id = ${id}
         RETURNING *
       `);

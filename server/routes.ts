@@ -1206,30 +1206,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const assessment = await storage.getAssessment(assessmentId);
             
             if (assessment?.name === "Kapandji Score") {
-              // Use Kapandji-specific scoring for thumb opposition
-              const kapandjiModule = await import('../shared/kapandji-calculator');
-              const { calculateMaxKapandjiScore } = kapandjiModule;
-              
-              const formattedFrames = allMotionFrames.map(frame => ({
-                landmarks: frame.landmarks || frame
-              }));
-              
-              console.log(`Calculating Kapandji score for ${formattedFrames.length} motion frames`);
-              const kapandjiResult = calculateMaxKapandjiScore(formattedFrames);
-              
-              console.log('Kapandji score result:', JSON.stringify(kapandjiResult, null, 2));
-              
-              // Store Kapandji score in CORRECT dedicated field
-              kapandjiScore = kapandjiResult.maxScore;
-              totalActiveRom = kapandjiResult.maxScore; // Keep for backward compatibility display
-              
-              // Store details in individual finger fields for display
-              indexFingerRom = kapandjiResult.details.indexTip ? 3 : (kapandjiResult.details.indexMiddlePhalanx ? 2 : (kapandjiResult.details.indexProximalPhalanx ? 1 : 0));
-              middleFingerRom = kapandjiResult.details.middleTip ? 4 : 0;
-              ringFingerRom = kapandjiResult.details.ringTip ? 5 : 0;
-              pinkyFingerRom = kapandjiResult.details.littleTip ? 6 : 0;
-              
-              console.log('Kapandji assessment completed with score:', kapandjiScore, '(saved to kapandjiScore field)');
+              try {
+                console.log('🎯 Starting Kapandji score calculation...');
+                // Use Kapandji-specific scoring for thumb opposition
+                const kapandjiModule = await import('../shared/kapandji-calculator');
+                console.log('🎯 Kapandji module imported successfully');
+                
+                const { calculateMaxKapandjiScore } = kapandjiModule;
+                
+                const formattedFrames = allMotionFrames.map(frame => ({
+                  landmarks: frame.landmarks || frame
+                }));
+                
+                console.log(`🎯 Calculating Kapandji score for ${formattedFrames.length} motion frames`);
+                console.log('🎯 First frame sample:', formattedFrames[0] ? Object.keys(formattedFrames[0]) : 'No frames');
+                
+                const kapandjiResult = calculateMaxKapandjiScore(formattedFrames);
+                console.log('🎯 Kapandji calculation completed successfully');
+                
+                console.log('🎯 Kapandji score result:', JSON.stringify(kapandjiResult, null, 2));
+                
+                // Store Kapandji score in CORRECT dedicated field
+                kapandjiScore = kapandjiResult.maxScore;
+                totalActiveRom = kapandjiResult.maxScore; // Keep for backward compatibility display
+                
+                // Store details in individual finger fields for display
+                indexFingerRom = kapandjiResult.details.indexTip ? 3 : (kapandjiResult.details.indexMiddlePhalanx ? 2 : (kapandjiResult.details.indexProximalPhalanx ? 1 : 0));
+                middleFingerRom = kapandjiResult.details.middleTip ? 4 : 0;
+                ringFingerRom = kapandjiResult.details.ringTip ? 5 : 0;
+                pinkyFingerRom = kapandjiResult.details.littleTip ? 6 : 0;
+                
+                console.log('🎯 Kapandji assessment completed with score:', kapandjiScore, '(saved to kapandjiScore field)');
+                console.log('🎯 Kapandji ROM values:', { indexFingerRom, middleFingerRom, ringFingerRom, pinkyFingerRom });
+                
+              } catch (kapandjiError) {
+                console.error('❌ Error in Kapandji calculation:', kapandjiError);
+                console.error('❌ Kapandji error stack:', kapandjiError.stack);
+                throw new Error(`Kapandji calculation failed: ${kapandjiError.message}`);
+              }
               
             } else {
               // Use standard ROM calculation for other assessments

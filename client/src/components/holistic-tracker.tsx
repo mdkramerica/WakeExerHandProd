@@ -2,6 +2,13 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { calculateElbowReferencedWristAngle, calculateElbowReferencedWristAngleWithForce, resetRecordingSession, getRecordingSessionElbowSelection, resetElbowSessionState } from "@shared/elbow-wrist-calculator";
 import { calculateWristDeviation } from "@shared/rom-calculator";
 import { SkeletonOverlay } from "./skeleton-overlay";
+import { 
+  getCurrentTarget, 
+  getTargetPosition, 
+  getProgressMessage,
+  type TargetState,
+  type KapandjiTarget
+} from "@shared/kapandji-target-system";
 
 // MediaPipe type declarations for window object
 declare global {
@@ -35,30 +42,43 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
   const animationRef = useRef<number>();
   const pulsePhaseRef = useRef<number>(0);
 
-  // Import target system functions
-  const { getCurrentTarget, getTargetPosition, getProgressMessage } = (() => {
-    try {
-      return require('@shared/kapandji-target-system');
-    } catch (e) {
-      console.warn('Kapandji target system not available:', e);
-      return { getCurrentTarget: () => null, getTargetPosition: () => null, getProgressMessage: () => '' };
-    }
-  })();
+  // Import target system functions (will be imported at top of file)
 
   // Kapandji target drawing function
   const drawKapandjiTargets = (ctx: CanvasRenderingContext2D, landmarks: any[], canvasWidth: number, canvasHeight: number) => {
-    if (!kapandjiTargetState || landmarks.length !== 21) return;
+    console.log('🎯 drawKapandjiTargets called:', { 
+      hasState: !!kapandjiTargetState, 
+      landmarkCount: landmarks.length,
+      canvasSize: `${canvasWidth}x${canvasHeight}`
+    });
+    
+    if (!kapandjiTargetState || landmarks.length !== 21) {
+      console.log('🎯 Early return from drawKapandjiTargets:', { 
+        hasState: !!kapandjiTargetState, 
+        landmarkCount: landmarks.length 
+      });
+      return;
+    }
     
     try {
       pulsePhaseRef.current += 0.1;
       const pulse = Math.sin(pulsePhaseRef.current) * 0.3 + 0.7; // Pulse between 0.4 and 1.0
       
+      console.log('🎯 Getting current target from state:', kapandjiTargetState);
       const currentTarget = getCurrentTarget(kapandjiTargetState);
-      if (!currentTarget) return;
+      console.log('🎯 Current target:', currentTarget);
+      
+      if (!currentTarget) {
+        console.log('🎯 No current target found');
+        return;
+      }
       
       const targetPosition = getTargetPosition(currentTarget, landmarks);
+      console.log('🎯 Target position:', targetPosition);
+      
       const targetX = targetPosition.x * canvasWidth;
       const targetY = targetPosition.y * canvasHeight;
+      console.log('🎯 Canvas target coordinates:', { targetX, targetY });
       
       const baseRadius = 25;
       const pulseRadius = baseRadius * pulse;
@@ -723,7 +743,16 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
                 });
                 
                 // Draw Kapandji targets if this is a Kapandji assessment
+                console.log('🎯 Checking Kapandji target conditions:', {
+                  assessmentType,
+                  isKapandji: assessmentType === 'Kapandji Score',
+                  hasTargetState: !!kapandjiTargetState,
+                  isRecording,
+                  landmarkCount: currentHandLandmarks.length
+                });
+                
                 if (assessmentType === 'Kapandji Score' && kapandjiTargetState && isRecording) {
+                  console.log('🎯 Drawing Kapandji targets');
                   drawKapandjiTargets(ctx, currentHandLandmarks, canvas.width, canvas.height);
                 }
               }

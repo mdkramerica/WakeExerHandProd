@@ -1773,7 +1773,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const today = new Date();
       const todayStr = today.toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
       
-      const dailyAssessments = coreAssessments.map(assessment => {
+      const dailyAssessments = coreAssessments
+        .filter(assessment => assessment.id !== 6) // Exclude DASH Survey (ID: 6) as it's handled separately
+        .map(assessment => {
         // Find assessments completed today only
         const completedToday = userAssessments.find(ua => {
           if (!ua.assessmentId || ua.assessmentId !== assessment.id || !ua.isCompleted || !ua.completedAt) {

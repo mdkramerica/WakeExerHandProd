@@ -1765,10 +1765,7 @@ export class DatabaseStorage implements IStorage {
         INSERT INTO user_assessments (
           user_id, assessment_id, session_number, is_completed, completed_at,
           quality_score, repetition_data, rom_data, dash_score, responses,
-          total_active_rom, hand_type, 
-          index_finger_rom, middle_finger_rom, ring_finger_rom, pinky_finger_rom,
-          max_wrist_flexion, max_wrist_extension, wrist_flexion_angle, wrist_extension_angle,
-          max_radial_deviation, max_ulnar_deviation
+          total_active_rom, hand_type
         ) VALUES (
           ${insertUserAssessment.userId}, 
           ${insertUserAssessment.assessmentId}, 
@@ -1781,17 +1778,7 @@ export class DatabaseStorage implements IStorage {
           ${insertUserAssessment.dashScore || null},
           ${insertUserAssessment.responses ? JSON.stringify(insertUserAssessment.responses) : null},
           ${insertUserAssessment.totalActiveRom || null},
-          ${insertUserAssessment.handType || null},
-          ${insertUserAssessment.indexFingerRom || null},
-          ${insertUserAssessment.middleFingerRom || null},
-          ${insertUserAssessment.ringFingerRom || null},
-          ${insertUserAssessment.pinkyFingerRom || null},
-          ${insertUserAssessment.maxWristFlexion || null},
-          ${insertUserAssessment.maxWristExtension || null},
-          ${insertUserAssessment.wristFlexionAngle || null},
-          ${insertUserAssessment.wristExtensionAngle || null},
-          ${insertUserAssessment.maxRadialDeviation || null},
-          ${insertUserAssessment.maxUlnarDeviation || null}
+          ${insertUserAssessment.handType || null}
         ) RETURNING id, user_id as "userId", assessment_id as "assessmentId",
                     is_completed as "isCompleted", completed_at as "completedAt",
                     quality_score as "qualityScore", dash_score as "dashScore",
@@ -1868,46 +1855,8 @@ export class DatabaseStorage implements IStorage {
         updateFields.push('total_active_rom = $' + (values.length + 1));
         values.push(updates.totalActiveRom);
       }
-      if (updates.indexFingerRom !== undefined) {
-        updateFields.push('index_finger_rom = $' + (values.length + 1));
-        values.push(updates.indexFingerRom);
-      }
-      if (updates.middleFingerRom !== undefined) {
-        updateFields.push('middle_finger_rom = $' + (values.length + 1));
-        values.push(updates.middleFingerRom);
-      }
-      if (updates.ringFingerRom !== undefined) {
-        updateFields.push('ring_finger_rom = $' + (values.length + 1));
-        values.push(updates.ringFingerRom);
-      }
-      if (updates.pinkyFingerRom !== undefined) {
-        updateFields.push('pinky_finger_rom = $' + (values.length + 1));
-        values.push(updates.pinkyFingerRom);
-      }
-      if (updates.wristFlexionAngle !== undefined) {
-        updateFields.push('wrist_flexion_angle = $' + (values.length + 1));
-        values.push(updates.wristFlexionAngle);
-      }
-      if (updates.wristExtensionAngle !== undefined) {
-        updateFields.push('wrist_extension_angle = $' + (values.length + 1));
-        values.push(updates.wristExtensionAngle);
-      }
-      if (updates.maxWristFlexion !== undefined) {
-        updateFields.push('max_wrist_flexion = $' + (values.length + 1));
-        values.push(updates.maxWristFlexion);
-      }
-      if (updates.maxWristExtension !== undefined) {
-        updateFields.push('max_wrist_extension = $' + (values.length + 1));
-        values.push(updates.maxWristExtension);
-      }
-      if (updates.maxRadialDeviation !== undefined) {
-        updateFields.push('max_radial_deviation = $' + (values.length + 1));
-        values.push(updates.maxRadialDeviation);
-      }
-      if (updates.maxUlnarDeviation !== undefined) {
-        updateFields.push('max_ulnar_deviation = $' + (values.length + 1));
-        values.push(updates.maxUlnarDeviation);
-      }
+      // Note: Detailed ROM fields stored in JSON data (repetition_data, rom_data)
+      // Individual columns removed due to production database schema compatibility
       
       if (updateFields.length === 0) return undefined;
       

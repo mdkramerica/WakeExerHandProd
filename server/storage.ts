@@ -1664,7 +1664,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserAssessments(userId: number): Promise<UserAssessment[]> {
-    return await db.select().from(userAssessments).where(eq(userAssessments.userId, userId));
+    try {
+      return await db.select().from(userAssessments).where(eq(userAssessments.userId, userId));
+    } catch (error) {
+      console.error('Database schema error in getUserAssessments, using fallback query:', error);
+      // Fallback: Use raw SQL to avoid schema issues
+      const result = await db.execute(sql`
+        SELECT 
+          id, user_id as "userId", assessment_id as "assessmentId", session_number as "sessionNumber",
+          is_completed as "isCompleted", completed_at as "completedAt", quality_score as "qualityScore",
+          total_active_rom as "totalActiveRom", index_finger_rom as "indexFingerRom", 
+          middle_finger_rom as "middleFingerRom", ring_finger_rom as "ringFingerRom", 
+          pinky_finger_rom as "pinkyFingerRom", 
+          max_wrist_flexion as "maxWristFlexion", max_wrist_extension as "maxWristExtension",
+          wrist_flexion_angle as "wristFlexionAngle", wrist_extension_angle as "wristExtensionAngle",
+          hand_type as "handType", dash_score as "dashScore", share_token as "shareToken",
+          created_at as "createdAt"
+        FROM user_assessments 
+        WHERE user_id = ${userId}
+        ORDER BY created_at DESC
+      `);
+      return result.rows as UserAssessment[];
+    }
   }
 
   // Optimized method for assessment history - excludes heavy JSON fields for better performance

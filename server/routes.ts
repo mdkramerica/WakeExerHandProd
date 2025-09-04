@@ -908,6 +908,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's best-ever Kapandji score for target guidance
+  app.get("/api/users/:userId/best-kapandji-score", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const userAssessments = await storage.getUserAssessmentsForHistory(userId);
+      
+      if (!userAssessments || userAssessments.length === 0) {
+        return res.json({ bestScore: null });
+      }
+      
+      // Find all completed Kapandji assessments (assessment ID 2 or 27)
+      const kapandjiAssessments = userAssessments.filter(ua => 
+        ua.isCompleted && 
+        (ua.assessmentId === 2 || ua.assessmentId === 27) &&
+        (ua.kapandjiScore || ua.totalActiveRom)
+      );
+      
+      if (kapandjiAssessments.length === 0) {
+        return res.json({ bestScore: null });
+      }
+      
+      // Find the highest score across all assessments
+      let bestScore = 0;
+      kapandjiAssessments.forEach(ua => {
+        const score = parseFloat(ua.kapandjiScore || ua.totalActiveRom || '0');
+        if (score > bestScore) {
+          bestScore = score;
+        }
+      });
+      
+      res.json({ 
+        bestScore: bestScore > 0 ? Math.floor(bestScore) : null,
+        totalAssessments: kapandjiAssessments.length
+      });
+      
+    } catch (error) {
+      console.error('Error fetching best Kapandji score:', error);
+      res.status(500).json({ message: "Failed to fetch best Kapandji score" });
+    }
+  });
+
   // Get user history with proper DASH score mapping
   app.get("/api/users/:userId/history", async (req, res) => {
     try {

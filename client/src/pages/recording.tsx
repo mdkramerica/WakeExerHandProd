@@ -16,6 +16,12 @@ import { useTouchGestures } from "@/hooks/use-touch-gestures";
 import { getKapandjiInterpretation } from "@shared/kapandji-interpretation";
 import { getTAMInterpretation } from "@shared/tam-interpretation";
 import { getApiBaseUrl } from "@/lib/queryClient";
+import { 
+  initializeTargetState, 
+  updateTargetState, 
+  type TargetState 
+} from "@shared/kapandji-target-system";
+import KapandjiTargetOverlay from "@/components/kapandji-target-overlay";
 
 export default function Recording() {
   console.log('🚀 RECORDING COMPONENT MOUNTED/RENDERED');
@@ -99,6 +105,11 @@ export default function Recording() {
   const [showSkeletonOverlay, setShowSkeletonOverlay] = useState(true);
   const [poseLandmarks, setPoseLandmarks] = useState<any[]>([]);
   const [sessionHandType, setSessionHandType] = useState<'LEFT' | 'RIGHT' | 'UNKNOWN'>('UNKNOWN');
+  
+  // Kapandji target system state
+  const [kapandjiTargetState, setKapandjiTargetState] = useState<TargetState | null>(null);
+  const [bestKapandjiScore, setBestKapandjiScore] = useState<number | null>(null);
+  
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -130,6 +141,16 @@ export default function Recording() {
   const { data: assessmentData } = useQuery({
     queryKey: [`/api/assessments/${id}`],
     enabled: !!id,
+  });
+
+  // Fetch best Kapandji score for target guidance (only for Kapandji assessments)
+  const isKapandjiAssessment = assessmentData?.assessment?.name === 'Kapandji Score' || 
+                               assessmentData?.assessment?.id === 2 || 
+                               assessmentData?.assessment?.id === 27;
+                               
+  const { data: bestScoreData } = useQuery({
+    queryKey: [`/api/users/${currentUser?.id}/best-kapandji-score`],
+    enabled: !!currentUser?.id && isKapandjiAssessment,
   });
 
   const completeAssessmentMutation = useMutation({
@@ -256,6 +277,20 @@ export default function Recording() {
       if (interval) clearInterval(interval);
     };
   }, [isCountingDown]);
+
+  // Initialize Kapandji target system when best score is loaded
+  useEffect(() => {
+    if (isKapandjiAssessment && bestScoreData && !kapandjiTargetState) {
+      const bestScore = bestScoreData.bestScore;
+      setBestKapandjiScore(bestScore);
+      setKapandjiTargetState(initializeTargetState(bestScore));
+      
+      console.log('🎯 Kapandji target system initialized:', {
+        bestScore,
+        isFirstTime: !bestScore
+      });
+    }
+  }, [isKapandjiAssessment, bestScoreData, kapandjiTargetState]);
 
   // Recording timer effect - handles 15-second countdown and auto-stop
   useEffect(() => {
@@ -533,6 +568,25 @@ export default function Recording() {
     if (data.landmarks && data.landmarks.length > 0) {
       setCurrentLandmarks(data.landmarks);
       
+      // Update Kapandji target state during recording
+      if (isKapandjiAssessment && kapandjiTargetState && isRecording) {
+        const updatedTargetState = updateTargetState(
+          kapandjiTargetState,
+          data.landmarks,
+          bestKapandjiScore
+        );
+        
+        if (JSON.stringify(updatedTargetState) !== JSON.stringify(kapandjiTargetState)) {
+          setKapandjiTargetState(updatedTargetState);
+          
+          // Log target achievements
+          if (updatedTargetState.achievedTargets.length > kapandjiTargetState.achievedTargets.length) {
+            const newScore = updatedTargetState.maxScoreAchieved;
+            console.log(`🎯 Kapandji target ${newScore} achieved!`);
+          }
+        }
+      }
+      
       // Update pose landmarks if available for enhanced wrist assessment
       if (data.poseLandmarks) {
         setPoseLandmarks(data.poseLandmarks);
@@ -750,6 +804,19 @@ export default function Recording() {
                   onHandValidation={handleHandValidation}
                   onMultiHandDetected={handleMultiHandDetected}
                 />
+                
+                {/* Kapandji Target Overlay */}
+                {isKapandjiAssessment && kapandjiTargetState && currentLandmarks.length === 21 && (
+                  <KapandjiTargetOverlay
+                    canvasRef={{ current: document.querySelector('canvas') }}
+                    handLandmarks={currentLandmarks}
+                    targetState={kapandjiTargetState}
+                    bestEverScore={bestKapandjiScore}
+                    isVisible={true}
+                    canvasWidth={640}
+                    canvasHeight={480}
+                  />
+                )}
                 
                 {/* Subtle multi-hand warning */}
                 {handValidation.showWarning && !isRecording && (

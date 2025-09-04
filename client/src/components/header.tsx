@@ -37,7 +37,7 @@ export default function Header() {
               }}
             />
             <div>
-              <h1 className="text-xs sm:text-xl font-semibold text-exer-navy">ROM Research Platform</h1>
+              <h1 className="text-xs sm:text-xl font-semibold text-exer-navy">WakeMed Research Platform</h1>
               <p className="text-xs sm:text-sm text-exer-gray hidden sm:block">Hand & Wrist Recovery Assessment</p>
             </div>
           </div>

@@ -254,15 +254,15 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
       };
     } else if (complianceRate < 75) {
       return {
-        backgroundColor: '#fefce8', // yellow-50
-        borderColor: '#ca8a04', // yellow-600
-        color: '#ca8a04'
+        backgroundColor: '#f8fafc', // slate-50
+        borderColor: '#64748b', // slate-500
+        color: '#475569' // slate-600
       };
     } else {
       return {
-        backgroundColor: '#f0fdf4', // green-50
-        borderColor: '#16a34a', // green-600
-        color: '#16a34a'
+        backgroundColor: '#f1f5f9', // slate-100
+        borderColor: '#334155', // slate-700
+        color: '#334155'
       };
     }
   };

@@ -1092,35 +1092,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/users/:userId/assessments/:assessmentId/start", async (req, res) => {
     try {
+      console.log('🚀 ASSESSMENT START REQUEST:', {
+        userId: req.params.userId,
+        assessmentId: req.params.assessmentId,
+        timestamp: new Date().toISOString()
+      });
+      
       const userId = parseInt(req.params.userId);
       const assessmentId = parseInt(req.params.assessmentId);
       
+      console.log('🔍 Parsed IDs:', { userId, assessmentId });
+      
       // Get the assessment to include its name
+      console.log('🔍 Getting assessment from storage...');
       const assessment = await storage.getAssessment(assessmentId);
+      console.log('🔍 Assessment retrieved:', { id: assessment?.id, name: assessment?.name });
+      
       if (!assessment) {
+        console.error('❌ Assessment not found for ID:', assessmentId);
         return res.status(404).json({ message: 'Assessment not found' });
       }
 
       // Create new user assessment
+      console.log('🔍 Creating user assessment...');
       const userAssessment = await storage.createUserAssessment({
         userId,
         assessmentId,
         isCompleted: false
       });
       
-      console.log('✅ Assessment started successfully:', userAssessment.id);
+      console.log('✅ Assessment started successfully:', {
+        id: userAssessment.id,
+        userId: userAssessment.userId,
+        assessmentId: userAssessment.assessmentId,
+        isCompleted: userAssessment.isCompleted
+      });
+      
       res.json({ userAssessment });
     } catch (error) {
-      console.error('❌ Failed to start assessment:', error);
-      console.error('❌ Start assessment error stack:', error.stack);
-      res.status(400).json({ message: "Failed to start assessment", error: error.message });
+      console.error('❌ CRITICAL ERROR in assessment start:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Request params:', req.params);
+      res.status(500).json({ 
+        message: "Failed to start assessment", 
+        error: error.message,
+        stack: error.stack 
+      });
     }
   });
 
   app.post("/api/users/:userId/assessments/:assessmentId/complete", async (req, res) => {
     try {
+      console.log('🚀 ASSESSMENT COMPLETE REQUEST:', {
+        userId: req.params.userId,
+        assessmentId: req.params.assessmentId,
+        hasBody: !!req.body,
+        bodyKeys: req.body ? Object.keys(req.body) : 'No body',
+        timestamp: new Date().toISOString()
+      });
+      
       const userId = parseInt(req.params.userId);
       const assessmentId = parseInt(req.params.assessmentId);
+      
+      console.log('🔍 Parsed completion IDs:', { userId, assessmentId });
       const { 
         romData, 
         repetitionData, 

@@ -1773,7 +1773,7 @@ export class DatabaseStorage implements IStorage {
           ${insertUserAssessment.assessmentId}, 
           ${insertUserAssessment.sessionNumber || 1},
           ${insertUserAssessment.isCompleted || false},
-          ${insertUserAssessment.completedAt || null},
+          ${insertUserAssessment.completedAt ? `'${insertUserAssessment.completedAt}'::timestamptz` : null},
           ${insertUserAssessment.qualityScore || null},
           ${insertUserAssessment.repetitionData ? JSON.stringify(insertUserAssessment.repetitionData) : null},
           ${insertUserAssessment.romData ? JSON.stringify(insertUserAssessment.romData) : null},
@@ -1830,7 +1830,7 @@ export class DatabaseStorage implements IStorage {
         values.push(updates.isCompleted);
       }
       if (updates.completedAt !== undefined) {
-        updateFields.push('completed_at = $' + (values.length + 1));
+        updateFields.push('completed_at = $' + (values.length + 1) + '::timestamptz');
         values.push(updates.completedAt);
       }
       if (updates.qualityScore !== undefined) {

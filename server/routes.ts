@@ -1418,7 +1418,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ userAssessment });
     } catch (error) {
       console.error('🔍 Error creating user assessment:', error);
-      res.status(400).json({ message: "Failed to complete assessment" });
+      console.error('🔍 Error stack:', error.stack);
+      console.error('🔍 Request body:', req.body);
+      res.status(400).json({ message: "Failed to complete assessment", error: error.message });
     }
   });
 

@@ -1352,7 +1352,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalActiveRom: totalActiveRom !== null ? String(totalActiveRom) : null,
           handType: handType || null,
           dashScore: dashScore !== null ? dashScore : null,
-          responses: responses ? JSON.stringify(responses) : null
+          responses: responses ? JSON.stringify(responses) : null,
+          // TAM-specific finger ROM values
+          indexFingerRom: indexFingerRom !== null ? String(indexFingerRom) : null,
+          middleFingerRom: middleFingerRom !== null ? String(middleFingerRom) : null,
+          ringFingerRom: ringFingerRom !== null ? String(ringFingerRom) : null,
+          pinkyFingerRom: pinkyFingerRom !== null ? String(pinkyFingerRom) : null,
+          // Kapandji score
+          kapandjiScore: kapandjiScore !== null ? String(kapandjiScore) : null
         });
       } else {
         // Fallback: Create new assessment if no incomplete one exists
@@ -1379,7 +1386,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalActiveRom: totalActiveRom !== null ? String(totalActiveRom) : null,
         handType: handType || null,
         dashScore: dashScore !== null ? dashScore : null,
-        responses: responses ? JSON.stringify(responses) : null
+        responses: responses ? JSON.stringify(responses) : null,
+        // TAM-specific finger ROM values
+        indexFingerRom: indexFingerRom !== null ? String(indexFingerRom) : null,
+        middleFingerRom: middleFingerRom !== null ? String(middleFingerRom) : null,
+        ringFingerRom: ringFingerRom !== null ? String(ringFingerRom) : null,
+        pinkyFingerRom: pinkyFingerRom !== null ? String(pinkyFingerRom) : null,
+        // Kapandji score
+        kapandjiScore: kapandjiScore !== null ? String(kapandjiScore) : null
         });
       }
       

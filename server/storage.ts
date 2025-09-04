@@ -1909,10 +1909,29 @@ export class DatabaseStorage implements IStorage {
         updateFields.push('responses = $' + (values.length + 1));
         values.push(typeof updates.responses === 'string' ? updates.responses : JSON.stringify(updates.responses));
       }
-      if (updates.totalActiveRom !== undefined) {
-        updateFields.push('total_active_rom = $' + (values.length + 1));
-        values.push(updates.totalActiveRom);
+      // TAM-specific finger ROM fields
+      if (updates.indexFingerRom !== undefined) {
+        updateFields.push('index_finger_rom = $' + (values.length + 1));
+        values.push(updates.indexFingerRom);
       }
+      if (updates.middleFingerRom !== undefined) {
+        updateFields.push('middle_finger_rom = $' + (values.length + 1));
+        values.push(updates.middleFingerRom);
+      }
+      if (updates.ringFingerRom !== undefined) {
+        updateFields.push('ring_finger_rom = $' + (values.length + 1));
+        values.push(updates.ringFingerRom);
+      }
+      if (updates.pinkyFingerRom !== undefined) {
+        updateFields.push('pinky_finger_rom = $' + (values.length + 1));
+        values.push(updates.pinkyFingerRom);
+      }
+      // Kapandji score field
+      if (updates.kapandjiScore !== undefined) {
+        updateFields.push('kapandji_score = $' + (values.length + 1));
+        values.push(updates.kapandjiScore);
+      }
+      // Note: totalActiveRom already handled above at line 1888, removed duplicate
       // Note: Detailed ROM fields stored in JSON data (repetition_data, rom_data)
       // Individual columns removed due to production database schema compatibility
       

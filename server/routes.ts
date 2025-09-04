@@ -1830,16 +1830,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Core assessments count:', coreAssessments?.length);
       
       console.log('Getting user assessments for user ID:', user.id);
-      let userAssessments;
-      try {
-        userAssessments = await storage.getUserAssessments(user.id);
-        console.log('User assessments count:', userAssessments?.length);
-      } catch (dbError) {
-        console.error('Database error getting user assessments:', dbError);
-        // Fallback to empty array if database has schema issues
-        userAssessments = [];
-        console.log('Using empty assessments array due to database error');
-      }
+      // Use the same method as the working /api/users/:userId/assessments endpoint
+      const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
+      console.log('User assessments count:', userAssessments?.length);
 
       const dailyAssessments = coreAssessments.map(assessment => {
         const completed = userAssessments.find(ua => ua.assessmentId === assessment.id && ua.isCompleted);
@@ -2049,13 +2042,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const daysSinceRecovery = Math.max(0, Math.floor((today - recoveryStartDate) / (1000 * 60 * 60 * 24)));
       
       // Get user's actual assessments to calculate real streaks
-      let userAssessments;
-      try {
-        userAssessments = await storage.getUserAssessments(user.id);
-      } catch (dbError) {
-        console.error('Database error in streak endpoint:', dbError);
-        userAssessments = [];
-      }
+      // Use the same working method as other endpoints
+      const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
       const completedAssessments = userAssessments.filter(ua => ua.isCompleted);
       const actualCompletions = completedAssessments.length;
       

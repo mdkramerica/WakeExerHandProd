@@ -1678,11 +1678,10 @@ export class DatabaseStorage implements IStorage {
           pinky_finger_rom as "pinkyFingerRom", 
           max_wrist_flexion as "maxWristFlexion", max_wrist_extension as "maxWristExtension",
           wrist_flexion_angle as "wristFlexionAngle", wrist_extension_angle as "wristExtensionAngle",
-          hand_type as "handType", dash_score as "dashScore", share_token as "shareToken",
-          created_at as "createdAt"
+          hand_type as "handType", dash_score as "dashScore", share_token as "shareToken"
         FROM user_assessments 
         WHERE user_id = ${userId}
-        ORDER BY created_at DESC
+        ORDER BY completed_at DESC NULLS LAST
       `);
       return result.rows as UserAssessment[];
     }

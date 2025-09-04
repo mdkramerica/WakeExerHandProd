@@ -1808,19 +1808,17 @@ export class DatabaseStorage implements IStorage {
       
       if (Object.keys(safeUpdates).length === 0) return undefined;
       
+      // Simple fallback: only update essential fields that definitely exist
       const result = await db.execute(sql`
         UPDATE user_assessments 
         SET 
-          is_completed = ${safeUpdates.is_completed || false},
-          completed_at = ${safeUpdates.completed_at || null},
-          quality_score = ${safeUpdates.quality_score || null},
-          total_active_rom = ${safeUpdates.total_active_rom || null},
-          hand_type = ${safeUpdates.hand_type || null},
-          dash_score = ${safeUpdates.dash_score || null},
-          repetition_data = ${safeUpdates.repetition_data || null},
-          rom_data = ${safeUpdates.rom_data || null}
+          is_completed = ${updates.isCompleted || false},
+          completed_at = ${updates.completedAt || null},
+          quality_score = ${updates.qualityScore || null}
         WHERE id = ${id}
-        RETURNING *
+        RETURNING id, user_id as "userId", assessment_id as "assessmentId", 
+                  is_completed as "isCompleted", completed_at as "completedAt",
+                  quality_score as "qualityScore"
       `);
       return result.rows[0] as UserAssessment;
     }

@@ -1207,7 +1207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             if (assessment?.name === "Kapandji Score") {
               // Use Kapandji-specific scoring for thumb opposition
-              const kapandjiModule = await import('../shared/kapandji-calculator.js');
+              const kapandjiModule = await import('../shared/kapandji-calculator');
               const { calculateMaxKapandjiScore } = kapandjiModule;
               
               const formattedFrames = allMotionFrames.map(frame => ({
@@ -1233,7 +1233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
             } else {
               // Use standard ROM calculation for other assessments
-              const romCalculatorModule = await import('../shared/rom-calculator.js');
+              const romCalculatorModule = await import('../shared/rom-calculator');
               const { calculateAllFingersMaxROM } = romCalculatorModule;
               
               // Ensure motion frames have the correct structure

@@ -1817,8 +1817,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         daysSinceLastDash = daysSinceStart;
       }
       
-      // Show DASH assessment if it's been 6+ days since last completion or if it's the first week
-      if (daysSinceLastDash >= 6 || (daysSinceStart >= 6 && !lastDashAssessment)) {
+      // Show DASH assessment if it's been 6+ days since last completion, or if it's a new patient (Day 1), or first week without DASH
+      if (daysSinceLastDash >= 6 || (daysSinceStart >= 1 && !lastDashAssessment)) {
         dailyAssessments.push({
           id: 6,
           name: "DASH Survey",

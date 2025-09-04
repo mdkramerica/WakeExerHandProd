@@ -1731,20 +1731,65 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUserAssessment(insertUserAssessment: InsertUserAssessment): Promise<UserAssessment> {
-    const [userAssessment] = await db
-      .insert(userAssessments)
-      .values(insertUserAssessment)
-      .returning();
-    return userAssessment;
+    try {
+      const [userAssessment] = await db
+        .insert(userAssessments)
+        .values(insertUserAssessment)
+        .returning();
+      return userAssessment;
+    } catch (error) {
+      console.error('Database insert error in createUserAssessment, using fallback:', error);
+      // Fallback: Use raw SQL to avoid schema issues
+      const result = await db.execute(sql`
+        INSERT INTO user_assessments (
+          user_id, assessment_id, session_number, is_completed, completed_at,
+          quality_score, total_active_rom, index_finger_rom, middle_finger_rom,
+          ring_finger_rom, pinky_finger_rom, max_wrist_flexion, max_wrist_extension,
+          wrist_flexion_angle, wrist_extension_angle, hand_type, dash_score,
+          repetition_data, share_token, created_at
+        ) VALUES (
+          ${insertUserAssessment.userId}, ${insertUserAssessment.assessmentId}, 
+          ${insertUserAssessment.sessionNumber}, ${insertUserAssessment.isCompleted},
+          ${insertUserAssessment.completedAt}, ${insertUserAssessment.qualityScore},
+          ${insertUserAssessment.totalActiveRom}, ${insertUserAssessment.indexFingerRom},
+          ${insertUserAssessment.middleFingerRom}, ${insertUserAssessment.ringFingerRom},
+          ${insertUserAssessment.pinkyFingerRom}, ${insertUserAssessment.maxWristFlexion},
+          ${insertUserAssessment.maxWristExtension}, ${insertUserAssessment.wristFlexionAngle},
+          ${insertUserAssessment.wristExtensionAngle}, ${insertUserAssessment.handType},
+          ${insertUserAssessment.dashScore}, ${insertUserAssessment.repetitionData},
+          ${insertUserAssessment.shareToken}, NOW()
+        ) RETURNING *
+      `);
+      return result.rows[0] as UserAssessment;
+    }
   }
 
   async updateUserAssessment(id: number, updates: Partial<UserAssessment>): Promise<UserAssessment | undefined> {
-    const [userAssessment] = await db
-      .update(userAssessments)
-      .set(updates)
-      .where(eq(userAssessments.id, id))
-      .returning();
-    return userAssessment || undefined;
+    try {
+      const [userAssessment] = await db
+        .update(userAssessments)
+        .set(updates)
+        .where(eq(userAssessments.id, id))
+        .returning();
+      return userAssessment;
+    } catch (error) {
+      console.error('Database update error in updateUserAssessment, using fallback:', error);
+      // Fallback: Use raw SQL to avoid schema issues
+      const setClause = Object.entries(updates)
+        .filter(([key, value]) => value !== undefined)
+        .map(([key, value]) => `${key.replace(/([A-Z])/g, '_$1').toLowerCase()} = ${typeof value === 'string' ? `'${value}'` : value}`)
+        .join(', ');
+      
+      if (!setClause) return undefined;
+      
+      const result = await db.execute(sql`
+        UPDATE user_assessments 
+        SET ${sql.raw(setClause)}
+        WHERE id = ${id}
+        RETURNING *
+      `);
+      return result.rows[0] as UserAssessment;
+    }
   }
 
   async deleteUserAssessment(id: number): Promise<boolean> {

@@ -455,17 +455,17 @@ export default function PatientMotionReplayPage() {
     error
   });
 
-  // Format assessment date and time
+  // Format assessment date and time in user's local timezone
   const formatAssessmentDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return {
-      date: date.toLocaleDateString('en-US', { 
+      date: date.toLocaleDateString(undefined, { 
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
       }),
-      time: date.toLocaleTimeString('en-US', { 
+      time: date.toLocaleTimeString(undefined, { 
         hour: 'numeric', 
         minute: '2-digit',
         hour12: true 

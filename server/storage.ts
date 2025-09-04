@@ -1739,16 +1739,74 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserAssessmentById(id: number): Promise<UserAssessment | undefined> {
-    const [userAssessment] = await db.select().from(userAssessments).where(eq(userAssessments.id, id));
-    return userAssessment || undefined;
+    try {
+      // Use specific column selection to avoid missing columns
+      const [userAssessment] = await db.select({
+        id: userAssessments.id,
+        userId: userAssessments.userId,
+        assessmentId: userAssessments.assessmentId,
+        sessionNumber: userAssessments.sessionNumber,
+        isCompleted: userAssessments.isCompleted,
+        completedAt: userAssessments.completedAt,
+        qualityScore: userAssessments.qualityScore,
+        totalActiveRom: userAssessments.totalActiveRom,
+        handType: userAssessments.handType,
+        dashScore: userAssessments.dashScore,
+        repetitionData: userAssessments.repetitionData,
+        romData: userAssessments.romData,
+        responses: userAssessments.responses,
+        shareToken: userAssessments.shareToken
+      }).from(userAssessments).where(eq(userAssessments.id, id));
+      return userAssessment || undefined;
+    } catch (error) {
+      console.error('Database error in getUserAssessmentById, using fallback:', error);
+      // Fallback: Use raw SQL
+      const result = await db.execute(sql`
+        SELECT 
+          id, user_id as "userId", assessment_id as "assessmentId", session_number as "sessionNumber",
+          is_completed as "isCompleted", completed_at as "completedAt", quality_score as "qualityScore",
+          total_active_rom as "totalActiveRom", hand_type as "handType", dash_score as "dashScore",
+          repetition_data as "repetitionData", rom_data as "romData", responses, share_token as "shareToken"
+        FROM user_assessments 
+        WHERE id = ${id}
+      `);
+      return result.rows[0] as UserAssessment || undefined;
+    }
   }
 
   async getUserAssessment(userId: number, assessmentId: number): Promise<UserAssessment | undefined> {
-    const results = await db
-      .select()
-      .from(userAssessments)
-      .where(eq(userAssessments.userId, userId));
-    return results.find(ua => ua.assessmentId === assessmentId) || undefined;
+    try {
+      const results = await db.select({
+        id: userAssessments.id,
+        userId: userAssessments.userId,
+        assessmentId: userAssessments.assessmentId,
+        sessionNumber: userAssessments.sessionNumber,
+        isCompleted: userAssessments.isCompleted,
+        completedAt: userAssessments.completedAt,
+        qualityScore: userAssessments.qualityScore,
+        totalActiveRom: userAssessments.totalActiveRom,
+        handType: userAssessments.handType,
+        dashScore: userAssessments.dashScore,
+        repetitionData: userAssessments.repetitionData,
+        romData: userAssessments.romData,
+        responses: userAssessments.responses,
+        shareToken: userAssessments.shareToken
+      }).from(userAssessments).where(eq(userAssessments.userId, userId));
+      return results.find(ua => ua.assessmentId === assessmentId) || undefined;
+    } catch (error) {
+      console.error('Database error in getUserAssessment, using fallback:', error);
+      // Fallback: Use raw SQL
+      const result = await db.execute(sql`
+        SELECT 
+          id, user_id as "userId", assessment_id as "assessmentId", session_number as "sessionNumber",
+          is_completed as "isCompleted", completed_at as "completedAt", quality_score as "qualityScore",
+          total_active_rom as "totalActiveRom", hand_type as "handType", dash_score as "dashScore",
+          repetition_data as "repetitionData", rom_data as "romData", responses, share_token as "shareToken"
+        FROM user_assessments 
+        WHERE user_id = ${userId} AND assessment_id = ${assessmentId}
+      `);
+      return result.rows[0] as UserAssessment || undefined;
+    }
   }
 
   async createUserAssessment(insertUserAssessment: InsertUserAssessment): Promise<UserAssessment> {

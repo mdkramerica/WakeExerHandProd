@@ -1304,7 +1304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         userAssessment = await storage.updateUserAssessment(incompleteAssessment.id, {
           isCompleted: true,
-          completedAt: new Date().toISOString(),
+          completedAt: new Date(),
           romData,
           repetitionData,
           qualityScore,
@@ -1364,7 +1364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         assessmentId,
         sessionNumber,
         isCompleted: true,
-        completedAt: new Date().toISOString(),
+        completedAt: new Date(),
         romData,
         repetitionData,
         qualityScore,

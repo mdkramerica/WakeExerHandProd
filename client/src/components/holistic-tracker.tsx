@@ -45,11 +45,11 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
   // Import target system functions (will be imported at top of file)
 
   // Simplified Kapandji target drawing function (inline, no external imports)
-  const drawKapandjiTargets = (ctx: CanvasRenderingContext2D, landmarks: any[], canvasWidth: number, canvasHeight: number) => {
+  const drawKapandjiTargets = (ctx: CanvasRenderingContext2D, landmarks: any[], canvas: HTMLCanvasElement) => {
     console.log('🎯 drawKapandjiTargets called:', { 
       hasState: !!kapandjiTargetState, 
       landmarkCount: landmarks.length,
-      canvasSize: `${canvasWidth}x${canvasHeight}`
+      canvasSize: `${canvas.width}x${canvas.height}`
     });
     
     if (!landmarks || landmarks.length < 8) {
@@ -70,8 +70,8 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       if (!targetPosition) {
         console.log('🎯 No target position found, using fallback position');
         // Fallback to center of canvas
-        const targetX = canvasWidth / 2;
-        const targetY = canvasHeight / 2;
+        const targetX = canvas.width / 2;
+        const targetY = canvas.height / 2;
         console.log('🎯 Using fallback target coordinates:', { targetX, targetY });
         
         // Draw simple target at center
@@ -82,15 +82,17 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
         ctx.stroke();
         
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.fillRect(10, 10, canvasWidth - 20, 50);
+        ctx.fillRect(10, 10, canvas.width - 20, 50);
         ctx.fillStyle = '#FFFFFF';
         ctx.font = 'bold 14px Arial';
         ctx.fillText('🎯 Target: Center of screen (landmarks not available)', 20, 35);
         return;
       }
       
-      const targetX = targetPosition.x * canvasWidth;
-      const targetY = targetPosition.y * canvasHeight;
+      // Transform coordinates to account for mobile scaling
+      const coords = transformCoordinates(targetPosition.x, targetPosition.y, canvas);
+      const targetX = coords.x;
+      const targetY = coords.y;
       console.log('🎯 Canvas target coordinates:', { targetX, targetY });
       
       const baseRadius = 25;
@@ -140,7 +142,7 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       
       // Draw simple progress message
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(10, 10, canvasWidth - 20, 50);
+      ctx.fillRect(10, 10, canvas.width - 20, 50);
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 14px Arial';
       ctx.fillText('🎯 Target: Touch index finger tip with thumb', 20, 35);
@@ -159,6 +161,20 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
   // Add frame dimension tracking
   const [frameWidth, setFrameWidth] = useState<number>(640);
   const [frameHeight, setFrameHeight] = useState<number>(480);
+  
+  // Coordinate transformation helper for mobile scaling issues
+  const transformCoordinates = useCallback((x: number, y: number, canvas: HTMLCanvasElement) => {
+    // Get the actual displayed size of the canvas
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    // Transform normalized coordinates to canvas coordinates
+    return {
+      x: x * canvas.width,
+      y: y * canvas.height
+    };
+  }, []);
   
   // Add temporal stability for hand type detection
   const lastHandTypeRef = useRef<'LEFT' | 'RIGHT' | 'UNKNOWN'>('UNKNOWN');
@@ -746,10 +762,10 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
               if (currentHandLandmarks && currentHandLandmarks.length > 0) {
                 ctx.fillStyle = '#00FF00';
                 currentHandLandmarks.forEach((landmark: any) => {
-                  const x = landmark.x * canvas.width; // No mirroring
-                  const y = landmark.y * canvas.height;
+                  // Transform coordinates to account for mobile scaling
+                  const coords = transformCoordinates(landmark.x, landmark.y, canvas);
                   ctx.beginPath();
-                  ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                  ctx.arc(coords.x, coords.y, 3, 0, 2 * Math.PI);
                   ctx.fill();
                 });
                 
@@ -770,7 +786,7 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
                 
                 if (isKapandjiAssessment) {
                   console.log('🎯 Drawing Kapandji targets - ALWAYS');
-                  drawKapandjiTargets(ctx, currentHandLandmarks, canvas.width, canvas.height);
+                  drawKapandjiTargets(ctx, currentHandLandmarks, canvas);
                 }
               }
               
@@ -953,8 +969,8 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       {/* Canvas for video display */}
       <canvas
         ref={canvasRef}
-        width="640"
-        height="480"
+        width={frameWidth}
+        height={frameHeight}
         style={{ 
           position: 'absolute',
           top: 0,
@@ -974,8 +990,8 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
           handLandmarks={currentHandLandmarks}
           poseLandmarks={currentPoseLandmarks}
           isVisible={showSkeletonOverlay}
-          canvasWidth={640}
-          canvasHeight={480}
+          canvasWidth={frameWidth}
+          canvasHeight={frameHeight}
         />
       )}
       

@@ -22,6 +22,8 @@ interface Assessment {
   assessmentName: string;
   completedAt: string;
   qualityScore: number;
+  kapandjiScore?: string;
+  totalActiveRom?: string;
   romData?: any;
   repetitionData?: any;
 }
@@ -405,6 +407,12 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
                               <Badge variant={getQualityBadgeVariant(assessment.qualityScore || 0)}>
                                 {assessment.qualityScore || 0}% Quality
                               </Badge>
+                              {/* Kapandji Score Display */}
+                              {assessment.assessmentName === 'Kapandji Score' && (assessment.kapandjiScore || assessment.totalActiveRom) && (
+                                <Badge variant="secondary" className="bg-teal-100 text-teal-800 border-teal-200">
+                                  Score: {assessment.kapandjiScore || assessment.totalActiveRom}/10
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               Completed: {formatDate(assessment.completedAt)}
@@ -424,15 +432,26 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
                                 View Results
                               </Button>
                             ) : assessment.assessmentName === 'Kapandji Score' ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => viewKapandjiResults(assessment.id)}
-                                className="flex items-center gap-1"
-                              >
-                                <Eye className="w-4 h-4" />
-                                View Results
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => viewKapandjiResults(assessment.id)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  View Results
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => viewMotionReplay(assessment.id)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  View Replay
+                                </Button>
+                              </div>
                             ) : (
                               <Button
                                 size="sm"

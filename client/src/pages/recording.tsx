@@ -109,6 +109,7 @@ export default function Recording() {
   // Kapandji target system state
   const [kapandjiTargetState, setKapandjiTargetState] = useState<TargetState | null>(null);
   const [bestKapandjiScore, setBestKapandjiScore] = useState<number | null>(null);
+  const holisticCanvasRef = useRef<HTMLCanvasElement>(null);
   
   const [, setLocation] = useLocation();
   const { toast } = useToast();

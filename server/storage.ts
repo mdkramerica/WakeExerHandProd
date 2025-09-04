@@ -1847,15 +1847,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserAssessment(id: number, updates: Partial<UserAssessment>): Promise<UserAssessment | undefined> {
+    console.log('🔍 updateUserAssessment called with:', { id, updateKeys: Object.keys(updates), updates: JSON.stringify(updates, null, 2) });
+    
     try {
+      // Filter out undefined values and convert strings to proper types for numeric fields
+      const cleanUpdates: any = {};
+      
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value !== undefined) {
+          // Convert string numbers back to numbers for numeric fields
+          if (['indexFingerRom', 'middleFingerRom', 'ringFingerRom', 'pinkyFingerRom', 'kapandjiScore', 'totalActiveRom', 'qualityScore'].includes(key) && typeof value === 'string') {
+            const numValue = parseFloat(value);
+            cleanUpdates[key] = isNaN(numValue) ? null : numValue;
+          } else {
+            cleanUpdates[key] = value;
+          }
+        }
+      });
+      
+      console.log('🔍 Cleaned updates for Drizzle:', cleanUpdates);
+      
       const [userAssessment] = await db
         .update(userAssessments)
-        .set(updates)
+        .set(cleanUpdates)
         .where(eq(userAssessments.id, id))
         .returning();
+      
+      console.log('✅ Drizzle update successful:', userAssessment?.id);
       return userAssessment;
     } catch (error) {
-      console.error('Database update error in updateUserAssessment, using fallback:', error);
+      console.error('❌ Database update error in updateUserAssessment, using fallback:', error);
       // Fallback: Use safe parameter-based update for known fields only
       const safeUpdates: any = {};
       if (updates.isCompleted !== undefined) safeUpdates.is_completed = updates.isCompleted;

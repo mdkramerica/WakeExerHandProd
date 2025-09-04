@@ -1105,13 +1105,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAssessment = await storage.createUserAssessment({
         userId,
         assessmentId,
-        assessmentName: assessment.name,
         isCompleted: false
       });
       
+      console.log('✅ Assessment started successfully:', userAssessment.id);
       res.json({ userAssessment });
     } catch (error) {
-      res.status(400).json({ message: "Failed to start assessment" });
+      console.error('❌ Failed to start assessment:', error);
+      console.error('❌ Start assessment error stack:', error.stack);
+      res.status(400).json({ message: "Failed to start assessment", error: error.message });
     }
   });
 

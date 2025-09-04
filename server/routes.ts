@@ -1374,9 +1374,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Find the incomplete user assessment that was created when recording started
       const existingAssessments = await storage.getUserAssessments(userId);
+      console.log('🔍 All existing assessments for user:', existingAssessments.map(ua => ({ 
+        id: ua.id, 
+        assessmentId: ua.assessmentId, 
+        isCompleted: ua.isCompleted 
+      })));
+      
       const incompleteAssessment = existingAssessments.find(ua => 
         ua.assessmentId === assessmentId && !ua.isCompleted
       );
+      
+      console.log('🔍 Incomplete assessment found:', !!incompleteAssessment, incompleteAssessment?.id);
       
       let userAssessment;
       

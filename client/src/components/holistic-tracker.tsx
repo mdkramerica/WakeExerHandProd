@@ -44,7 +44,7 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
 
   // Import target system functions (will be imported at top of file)
 
-  // Kapandji target drawing function
+  // Simplified Kapandji target drawing function (inline, no external imports)
   const drawKapandjiTargets = (ctx: CanvasRenderingContext2D, landmarks: any[], canvasWidth: number, canvasHeight: number) => {
     console.log('🎯 drawKapandjiTargets called:', { 
       hasState: !!kapandjiTargetState, 
@@ -52,9 +52,8 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       canvasSize: `${canvasWidth}x${canvasHeight}`
     });
     
-    if (!kapandjiTargetState || landmarks.length !== 21) {
+    if (landmarks.length !== 21) {
       console.log('🎯 Early return from drawKapandjiTargets:', { 
-        hasState: !!kapandjiTargetState, 
         landmarkCount: landmarks.length 
       });
       return;
@@ -64,17 +63,14 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       pulsePhaseRef.current += 0.1;
       const pulse = Math.sin(pulsePhaseRef.current) * 0.3 + 0.7; // Pulse between 0.4 and 1.0
       
-      console.log('🎯 Getting current target from state:', kapandjiTargetState);
-      const currentTarget = getCurrentTarget(kapandjiTargetState);
-      console.log('🎯 Current target:', currentTarget);
+      // Simple target system - just show target at index finger tip for now
+      const targetLandmarkIndex = 8; // Index finger tip
+      const targetPosition = landmarks[targetLandmarkIndex];
       
-      if (!currentTarget) {
-        console.log('🎯 No current target found');
+      if (!targetPosition) {
+        console.log('🎯 No target position found');
         return;
       }
-      
-      const targetPosition = getTargetPosition(currentTarget, landmarks);
-      console.log('🎯 Target position:', targetPosition);
       
       const targetX = targetPosition.x * canvasWidth;
       const targetY = targetPosition.y * canvasHeight;
@@ -82,10 +78,9 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       
       const baseRadius = 25;
       const pulseRadius = baseRadius * pulse;
-      const isAchieved = kapandjiTargetState.isTargetReached;
       
       // Outer pulsing ring
-      ctx.strokeStyle = isAchieved ? '#10B981' : '#3B82F6';
+      ctx.strokeStyle = '#3B82F6';
       ctx.lineWidth = 3;
       ctx.globalAlpha = 0.6 * pulse;
       ctx.beginPath();
@@ -94,21 +89,21 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       
       // Inner target circle
       ctx.globalAlpha = 0.8;
-      ctx.strokeStyle = isAchieved ? '#059669' : '#2563EB';
+      ctx.strokeStyle = '#2563EB';
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.arc(targetX, targetY, baseRadius, 0, 2 * Math.PI);
       ctx.stroke();
       
       // Target center dot
-      ctx.fillStyle = isAchieved ? '#10B981' : '#3B82F6';
+      ctx.fillStyle = '#3B82F6';
       ctx.globalAlpha = 1;
       ctx.beginPath();
       ctx.arc(targetX, targetY, 4, 0, 2 * Math.PI);
       ctx.fill();
       
       // Target crosshairs
-      ctx.strokeStyle = isAchieved ? '#059669' : '#2563EB';
+      ctx.strokeStyle = '#2563EB';
       ctx.lineWidth = 2;
       ctx.globalAlpha = 0.8;
       
@@ -126,13 +121,12 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
       
       ctx.globalAlpha = 1;
       
-      // Draw progress message
-      const message = getProgressMessage(kapandjiTargetState, bestKapandjiScore);
+      // Draw simple progress message
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(10, 10, canvasWidth - 20, 50);
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 14px Arial';
-      ctx.fillText(message, 20, 35);
+      ctx.fillText('🎯 Target: Touch index finger tip with thumb', 20, 35);
       
     } catch (error) {
       console.warn('Error drawing Kapandji targets:', error);
@@ -751,7 +745,8 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
                   landmarkCount: currentHandLandmarks.length
                 });
                 
-                if (assessmentType === 'Kapandji Score' && kapandjiTargetState && isRecording) {
+                // Simplified condition - just check if it's a Kapandji assessment and recording
+                if (assessmentType === 'Kapandji Score' && isRecording && currentHandLandmarks.length === 21) {
                   console.log('🎯 Drawing Kapandji targets');
                   drawKapandjiTargets(ctx, currentHandLandmarks, canvas.width, canvas.height);
                 }

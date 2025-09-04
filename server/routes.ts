@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .update(userAssessments)
         .set({ 
           isCompleted: true,
-          completedAt: new Date().toISOString(),
+          completedAt: new Date(),
           totalActiveRom: '150.5',
           indexFingerRom: '30.0',
           kapandjiScore: '5.0'
@@ -1472,7 +1472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         userAssessment = await storage.updateUserAssessment(incompleteAssessment.id, {
           isCompleted: true,
-          completedAt: new Date().toISOString(),
+          completedAt: new Date(),
           romData,
           repetitionData,
           qualityScore,
@@ -1506,7 +1506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         assessmentId,
         sessionNumber,
         isCompleted: true,
-        completedAt: new Date().toISOString(),
+        completedAt: new Date(),
         romData,
         repetitionData,
         qualityScore,

@@ -1959,7 +1959,10 @@ export class DatabaseStorage implements IStorage {
         RETURNING id, user_id as "userId", assessment_id as "assessmentId", 
                   is_completed as "isCompleted", completed_at as "completedAt",
                   quality_score as "qualityScore", total_active_rom as "totalActiveRom",
-                  hand_type as "handType", dash_score as "dashScore", responses
+                  hand_type as "handType", dash_score as "dashScore", responses,
+                  index_finger_rom as "indexFingerRom", middle_finger_rom as "middleFingerRom",
+                  ring_finger_rom as "ringFingerRom", pinky_finger_rom as "pinkyFingerRom",
+                  kapandji_score as "kapandjiScore"
       `;
       
       const result = await db.execute(sql.raw(query, [...values, id]));

@@ -1764,7 +1764,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db.execute(sql`
         INSERT INTO user_assessments (
           user_id, assessment_id, session_number, is_completed, completed_at,
-          quality_score, repetition_data, rom_data
+          quality_score, repetition_data, rom_data, dash_score, responses
         ) VALUES (
           ${insertUserAssessment.userId}, 
           ${insertUserAssessment.assessmentId}, 
@@ -1773,10 +1773,13 @@ export class DatabaseStorage implements IStorage {
           ${insertUserAssessment.completedAt || null},
           ${insertUserAssessment.qualityScore || null},
           ${insertUserAssessment.repetitionData ? JSON.stringify(insertUserAssessment.repetitionData) : null},
-          ${insertUserAssessment.romData ? JSON.stringify(insertUserAssessment.romData) : null}
+          ${insertUserAssessment.romData ? JSON.stringify(insertUserAssessment.romData) : null},
+          ${insertUserAssessment.dashScore || null},
+          ${insertUserAssessment.responses ? JSON.stringify(insertUserAssessment.responses) : null}
         ) RETURNING id, user_id as "userId", assessment_id as "assessmentId",
                     is_completed as "isCompleted", completed_at as "completedAt",
-                    quality_score as "qualityScore"
+                    quality_score as "qualityScore", dash_score as "dashScore",
+                    responses
       `);
       return result.rows[0] as UserAssessment;
     }
@@ -1841,6 +1844,10 @@ export class DatabaseStorage implements IStorage {
         updateFields.push('dash_score = $' + (values.length + 1));
         values.push(updates.dashScore);
       }
+      if (updates.responses !== undefined) {
+        updateFields.push('responses = $' + (values.length + 1));
+        values.push(typeof updates.responses === 'string' ? updates.responses : JSON.stringify(updates.responses));
+      }
       
       if (updateFields.length === 0) return undefined;
       
@@ -1851,7 +1858,7 @@ export class DatabaseStorage implements IStorage {
         RETURNING id, user_id as "userId", assessment_id as "assessmentId", 
                   is_completed as "isCompleted", completed_at as "completedAt",
                   quality_score as "qualityScore", total_active_rom as "totalActiveRom",
-                  hand_type as "handType"
+                  hand_type as "handType", dash_score as "dashScore", responses
       `;
       
       const result = await db.execute(sql.raw(query, [...values, id]));

@@ -316,12 +316,20 @@ export function PatientDetailModal({ patient, isOpen, onClose }: PatientDetailMo
 
           {/* Patient Data Tabs */}
           <Tabs defaultValue="assessments" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="assessments" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-2" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <TabsTrigger 
+                value="assessments" 
+                className="flex items-center gap-2" 
+                style={{ backgroundColor: '#ffffff', color: '#1f2937', border: '1px solid #d1d5db' }}
+              >
                 <Target className="w-4 h-4" />
                 Assessment History
               </TabsTrigger>
-              <TabsTrigger value="dash-progress" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="dash-progress" 
+                className="flex items-center gap-2"
+                style={{ backgroundColor: '#ffffff', color: '#1f2937', border: '1px solid #d1d5db' }}
+              >
                 <TrendingUp className="w-4 h-4" />
                 DASH Progress
               </TabsTrigger>

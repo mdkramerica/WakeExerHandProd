@@ -1795,7 +1795,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isCompleted: !!completedToday,
           completedAt: completedToday?.completedAt || null,
           userAssessmentId: completedToday?.id || null,
-          assessmentUrl: `/assessment/${assessment.id}/video/${code}`
+          assessmentUrl: `/assessment/${assessment.id}/video/${code}`,
+          // Add score data for completed assessments
+          lastScore: completedToday ? (completedToday.kapandjiScore || completedToday.totalActiveRom || null) : null
         };
       });
 

@@ -41,6 +41,8 @@ interface DailyAssessment {
   completedAt?: string | null;
   assessmentUrl: string;
   assessmentType?: string;
+  userAssessmentId?: number | null;
+  lastScore?: string | number | null;
 }
 
 interface DashReminderData {

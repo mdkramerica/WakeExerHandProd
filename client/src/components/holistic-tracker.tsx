@@ -763,7 +763,12 @@ export default function HolisticTracker({ onUpdate, isRecording, assessmentType,
                 });
                 
                 // ALWAYS draw targets for Kapandji assessments during recording
-                if (assessmentType === 'Kapandji Score' && isRecording) {
+                const isKapandjiAssessment = assessmentType === 'Kapandji Score' || 
+                                           assessmentType?.includes('Kapandji') ||
+                                           assessmentType === '2' || 
+                                           assessmentType === '27';
+                
+                if (isKapandjiAssessment) {
                   console.log('🎯 Drawing Kapandji targets - ALWAYS');
                   drawKapandjiTargets(ctx, currentHandLandmarks, canvas.width, canvas.height);
                 }

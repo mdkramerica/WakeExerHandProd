@@ -8,7 +8,7 @@ import ProgressBar from "@/components/progress-bar";
 import HolisticTracker from "@/components/holistic-tracker";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { calculateCurrentROM, calculateMaxROM, calculateFingerROM, type JointAngles } from "@/lib/rom-calculator";
+import { calculateCurrentROM, calculateMaxROM, calculateFingerROM, calculateAllFingersMaxROM, type JointAngles } from "@/lib/rom-calculator";
 import { calculateWristAngles } from "@shared/wrist-calculator";
 import { calculateElbowReferencedWristAngle, calculateMaxElbowWristAngles, resetRecordingSession } from "@shared/elbow-wrist-calculator";
 import { useDeviceDetection } from "@/hooks/use-device-detection";
@@ -461,6 +461,20 @@ export default function Recording() {
   };
 
   const completeAssessment = (finalRecordedData = recordedData) => {
+    // Calculate TAM (Total Active Motion) for all fingers
+    let tamData = null;
+    if (finalRecordedData.length > 0 && finalRecordedData[0].motionData) {
+      try {
+        const motionFrames = finalRecordedData[0].motionData.map((frame: any) => ({
+          landmarks: frame.landmarks || []
+        }));
+        tamData = calculateAllFingersMaxROM(motionFrames);
+        console.log('🎯 TAM calculation completed:', tamData);
+      } catch (error) {
+        console.error('❌ TAM calculation failed:', error);
+      }
+    }
+
     const romData = {
       assessmentId: id,
       repetitionsCompleted: currentRepetition,
@@ -469,7 +483,15 @@ export default function Recording() {
       // Add frame dimensions from the first repetition
       frameWidth: finalRecordedData[0]?.frameWidth || 640,
       frameHeight: finalRecordedData[0]?.frameHeight || 480,
-      recordingResolution: finalRecordedData[0]?.recordingResolution || "640x480"
+      recordingResolution: finalRecordedData[0]?.recordingResolution || "640x480",
+      // Add TAM data if available
+      ...(tamData && {
+        totalActiveRom: tamData.index.totalActiveRom + tamData.middle.totalActiveRom + tamData.ring.totalActiveRom + tamData.pinky.totalActiveRom,
+        indexFingerRom: tamData.index.totalActiveRom,
+        middleFingerRom: tamData.middle.totalActiveRom,
+        ringFingerRom: tamData.ring.totalActiveRom,
+        pinkyFingerRom: tamData.pinky.totalActiveRom
+      })
     };
 
     console.log(`Completing assessment with ${finalRecordedData.length} repetitions:`, finalRecordedData);

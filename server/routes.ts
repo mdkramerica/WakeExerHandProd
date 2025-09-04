@@ -1135,7 +1135,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Collect all motion frames for multi-finger ROM calculation
         const allMotionFrames: any[] = [];
         
-        repetitionData.forEach((rep: any) => {
+        console.log('🔍 Processing repetitionData:', { 
+          isArray: Array.isArray(repetitionData), 
+          length: repetitionData.length,
+          firstRepKeys: repetitionData[0] ? Object.keys(repetitionData[0]) : 'No reps'
+        });
+        
+        repetitionData.forEach((rep: any, index: number) => {
           if (rep.romData) {
             // Keep existing index finger calculations for backward compatibility
             maxMcpAngle = Math.max(maxMcpAngle || 0, rep.romData.mcpAngle || 0);
@@ -1171,6 +1177,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Collect motion data for all finger calculations and extract wrist angle data
           if (rep.motionData && Array.isArray(rep.motionData)) {
+            console.log(`🔍 Rep ${index} motion data:`, { 
+              motionFrameCount: rep.motionData.length,
+              firstFrameKeys: rep.motionData[0] ? Object.keys(rep.motionData[0]) : 'No frames',
+              hasLandmarks: rep.motionData[0]?.landmarks ? rep.motionData[0].landmarks.length : 'No landmarks'
+            });
             allMotionFrames.push(...rep.motionData);
             
             // Extract wrist angles from motion frames for wrist assessments

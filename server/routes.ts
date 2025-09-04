@@ -1836,6 +1836,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAssessments = await storage.getUserAssessmentsForHistory(user.id);
       console.log('User assessments count:', userAssessments?.length);
 
+      const today = new Date();
       const todayStr = today.toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
       
       const dailyAssessments = coreAssessments.map(assessment => {
@@ -1863,7 +1864,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
           // Add DASH assessment reminder logic
-      const today = new Date();
+      // today already declared above
       const recoveryStartDate = user.studyStartDate ? new Date(user.studyStartDate) : new Date(user.createdAt);
       const daysSinceStart = Math.floor((today.getTime() - recoveryStartDate.getTime()) / (1000 * 60 * 60 * 24));
       

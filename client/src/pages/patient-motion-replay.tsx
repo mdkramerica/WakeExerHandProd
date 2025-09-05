@@ -545,7 +545,7 @@ export default function PatientMotionReplayPage() {
                 Review your recorded movement for better understanding
               </p>
             </div>
-            <NextAssessmentCTA userCode={userCode || ''} onClose={() => window.location.href = `/patient/${userCode}`} />
+            <NextAssessmentCTA userCode={userCode || ''} onClose={() => window.location.href = `/patient/${userCode}`} compact={true} />
           </div>
 
           {userAssessment ? (
@@ -602,6 +602,11 @@ export default function PatientMotionReplayPage() {
                 handedness={detectHandedness()}
                 userCode={userCode || ''}
               />
+
+              {/* Full NextAssessmentCTA at bottom of page */}
+              <div className="mt-8">
+                <NextAssessmentCTA userCode={userCode || ''} onClose={() => window.location.href = `/patient/${userCode}`} />
+              </div>
             </div>
           ) : (
             <Card>

@@ -816,7 +816,7 @@ export default function Recording() {
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">Recording Assessment</h2>
                 <p className="text-sm sm:text-base text-gray-800">
-                  Position <strong>one hand only</strong> in the camera view and perform the {assessment.name.toLowerCase()} movement. Keep your other hand out of view to ensure accurate tracking.
+                  Position <strong>one hand only</strong> in the camera view and perform the {assessment.name.toLowerCase()} movement. Keep your other hand out of view to ensure accurate tracking.  Reminder: Recording will only allow you to start if only one hand is in view.
                 </p>
               </div>
             </div>

@@ -7,9 +7,10 @@ import { Link } from 'wouter';
 interface NextAssessmentCTAProps {
   userCode: string;
   onClose: () => void;
+  compact?: boolean;
 }
 
-export function NextAssessmentCTA({ userCode, onClose }: NextAssessmentCTAProps) {
+export function NextAssessmentCTA({ userCode, onClose, compact = false }: NextAssessmentCTAProps) {
   // Get today's assessments to find the next one
   const { data: todayAssessments, isLoading } = useQuery({
     queryKey: [`/api/patients/${userCode}/daily-assessments`],
@@ -27,6 +28,17 @@ export function NextAssessmentCTA({ userCode, onClose }: NextAssessmentCTAProps)
 
   if (!nextAssessment) {
     // All assessments completed for today
+    if (compact) {
+      return (
+        <Button 
+          onClick={onClose}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 text-sm"
+        >
+          ✓ All Complete - Dashboard
+        </Button>
+      );
+    }
+    
     return (
       <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 shadow-lg">
         <CardContent className="pt-6 pb-6">
@@ -52,6 +64,22 @@ export function NextAssessmentCTA({ userCode, onClose }: NextAssessmentCTAProps)
     );
   }
 
+  // Compact version - just the button
+  if (compact) {
+    return (
+      <Link href={nextAssessment.assessmentUrl}>
+        <Button 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 text-sm"
+        >
+          <Target className="w-4 h-4 mr-2" />
+          Complete Next Assessment
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
+      </Link>
+    );
+  }
+
+  // Full version - original large card
   return (
     <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-xl">
       <CardContent className="pt-6 pb-6">

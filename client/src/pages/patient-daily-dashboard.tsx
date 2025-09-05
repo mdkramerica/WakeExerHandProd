@@ -389,7 +389,7 @@ export default function PatientDailyDashboard() {
                     <div>
                       <h4 className="text-lg font-black text-blue-900 mb-1">Keep Going!</h4>
                       <p className="text-blue-800 font-bold">
-                        {todayAssessments.length} assessments remaining today. You've got this! Complete them all to keep your streak going.
+                        {todayAssessments.length} assessments remaining today. Complete them all to keep your streak going. You've got this! 
                       </p>
                     </div>
                   </div>

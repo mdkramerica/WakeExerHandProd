@@ -410,13 +410,6 @@ function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData =
 
       {/* Complete Next Assessment Call-to-Action */}
       <NextAssessmentCTA userCode={userCode || ''} onClose={onClose} />
-
-      <div className="flex justify-center">
-        <Button onClick={onClose} variant="outline">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
-      </div>
     </div>
   );
 }
@@ -552,12 +545,7 @@ export default function PatientMotionReplayPage() {
                 Review your recorded movement for better understanding
               </p>
             </div>
-            <Link href={`/patient/${userCode}`}>
-              <Button variant="outline" className="flex items-center gap-2 border-gray-600 text-black font-semibold hover:bg-gray-100">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
+            <NextAssessmentCTA userCode={userCode || ''} onClose={() => window.location.href = `/patient/${userCode}`} />
           </div>
 
           {userAssessment ? (

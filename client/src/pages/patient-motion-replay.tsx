@@ -407,9 +407,6 @@ function PatientMotionReplay({ assessmentName, userAssessmentId, recordingData =
           )}
         </CardContent>
       </Card>
-
-      {/* Complete Next Assessment Call-to-Action */}
-      <NextAssessmentCTA userCode={userCode || ''} onClose={onClose} />
     </div>
   );
 }
